@@ -47,8 +47,7 @@ Resources:
         Type: no_artifacts
       Environment:
         Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_MEDIUM
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
+        ComputeType: BUILD_GENERAL1_SMALL
       Source:
         Auth:
           Type: OAUTH
