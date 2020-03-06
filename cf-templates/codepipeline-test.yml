@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Description: which branch youre working on
+    Type: String
+    Default: dev
+
+Resources:
+
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub ${Environment}-s3-pipeline-artifact
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Environment}-role-temporary
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codepipeline.amazonaws.com"
+                - "codebuild.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: /service-role/
+      Policies:
+        -
+          PolicyName: "CodeBuildAccessPolicies"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "*"
+                Resource:
+                  - "*"
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${Environment}-codebuild
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: no_artifacts
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+      Source:
+        Auth:
+          Type: OAUTH
+        Location: https://github.com/threadgoldc/ml_ops.git
+        Type: GITHUB
+      # Triggers:
+      #   Webhook: true
+      #   FilterGroups:
+      #     - - Type: EVENT
+      #         Pattern: PUSH
+      #       - Type: HEAD_REF
+      #         Pattern: ^refs/heads/feature-codepipline-test$
+      #         ExcludeMatchedPattern: false
+      TimeoutInMinutes: 10
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore: 
+        Location: !Ref PipelineBucket
+        Type: S3
+      Name: !Sub ${Environment}-pipeline
+      RoleArn: arn:aws:iam::165648330768:role/service-role/AWSCodePipelineServiceRole-us-east-1-test
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GithubRepo
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                {"Owner": "threadgoldc",
+                "Repo": "ml_ops",
+                "PollForSourceChanges": "false",
+                "Branch": "feature-codepipline-test",
+                "OAuthToken": ""}
+              OutputArtifacts:
+                - Name: SourceZip
+              RunOrder: 1
+
+        - Name: Build
+          Actions:
+            - Name: BuildImage
+              InputArtifacts:
+                - Name: SourceZip
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                  ProjectName:
+                    Ref: CodeBuildProject
+              RunOrder: 1
