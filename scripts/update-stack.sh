@@ -1,6 +1,6 @@
 STACK_NAME=$1
 
-aws cloudformation create-stack  \
+aws cloudformation update-stack  \
     --stack-name $STACK_NAME  \
     --template-body file://cf-templates/$STACK_NAME.yml \
     --parameters file://cf-templates-params/$STACK_NAME.json \
