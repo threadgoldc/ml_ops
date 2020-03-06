@@ -56,4 +56,10 @@ Resources:
         Type: GITHUB
       Triggers:
         Webhook: true
+        FilterGroups:
+          - - Type: EVENT
+              Pattern: PUSH
+            - Type: HEAD_REF
+              Pattern: ^refs/heads/feature-codepipline-test$
+              ExcludeMatchedPattern: false
       TimeoutInMinutes: 10
