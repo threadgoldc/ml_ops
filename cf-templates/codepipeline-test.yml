@@ -16,6 +16,14 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
+  MLOpsBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub ${Environment}-s3-mldataset
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -93,7 +101,7 @@ Resources:
                 "Repo": "ml_ops",
                 "PollForSourceChanges": "false",
                 "Branch": "feature-codepipline-test",
-                "OAuthToken": ""}
+                "OAuthToken": '{{resolve:ssm:github:1}}'}
               OutputArtifacts:
                 - Name: SourceZip
               RunOrder: 1
@@ -112,3 +120,4 @@ Resources:
                   ProjectName:
                     Ref: CodeBuildProject
               RunOrder: 1
+    

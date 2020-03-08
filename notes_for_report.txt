@@ -1,0 +1,2 @@
+cant resolve ssm-secure in cf templates
+lambda deployment is horrible

@@ -26,7 +26,6 @@ def empty_s3_bucket(bucket_name):
 
 
 def check_stack_s3_ecr(stack_name, cf_client):
-    #check for any s3 buckets as they need to be empty before we call the delete function
     resources = cf_client.list_stack_resources(StackName=stack_name)['StackResourceSummaries']
 
     for resource in resources:
@@ -37,14 +36,10 @@ def check_stack_s3_ecr(stack_name, cf_client):
 
     cf_client = boto3.client('cloudformation')
 
-    cf_client.delete_stack(StackName=stack_name)
-    cf_client.delete_stack(StackName='scikit-base')
-    cf_client.delete_stack(StackName='iris-model')
-    cf_client.delete_stack(StackName='iris-train-pipeline')
-
 def delete_stack(stack_name):
     cf_client = boto3.client('cloudformation')
     check_stack_s3_ecr(stack_name, cf_client)
+    cf_client.delete_stack(StackName=stack_name)
 
 if __name__ == '__main__':
     stack_name = argv[1] 
