@@ -27,7 +27,7 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${Environment}-role-temporary
+      RoleName: !Sub ${Environment}-iam-codebuild
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -119,4 +119,26 @@ Resources:
               Configuration:
                   ProjectName:
                     Ref: CodeBuildProject
-              RunOrder: 1
+              RunOrder: 2
+
+        - Name: Deploy
+          Actions:
+            - Name: DeployImage
+              InputArtifacts:
+                - Name: SourceZip
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              OutputArtifacts:
+                - Name: DeployStack
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: !Sub ${Environment}-deployment-test
+                TemplateConfiguration: SourceZip::/cf-templates-params/mlops-resources.json
+                TemplatePath: SourceZip::/cf-templates/mlops-resources.yml
+              RunOrder: 3

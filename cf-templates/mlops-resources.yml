@@ -14,48 +14,47 @@ Resources:
           AccessControl: Private
           VersioningConfiguration:
             Status: Enabled
-    
-      LambdaFunction:
-        Type: AWS::Lambda::Function
-        Properties:
-          FunctionName: !Sub ${Environment}-lambda-test
-          Description: A test lambda
-          Runtime: python3.7
-          Code:
-            S3Bucket: String
-            S3Key: String
-          Handler: function.lambda_handler
-          Role:
-            Fn::GetAtt:
-              - LambdaRole
-              - Arn
-        DependsOn: LambdaRole
 
-        LambdaRole:
-            Type: AWS::IAM::Role
-            Properties:
-              RoleName: !Sub ${Environment}-role-temporary
-              AssumeRolePolicyDocument:
-                Version: "2012-10-17"
-                Statement:
-                  -
-                    Effect: "Allow"
-                    Principal:
-                      Service:
-                        - "codepipeline.amazonaws.com"
-                        - "codebuild.amazonaws.com"
-                    Action:
-                      - "sts:AssumeRole"
-              Path: /service-role/
-              Policies:
+    LambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Environment}-iam-lambda
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "CodeBuildAccessPolicies"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
                 -
-                  PolicyName: "CodeBuildAccessPolicies"
-                  PolicyDocument:
-                    Version: "2012-10-17"
-                    Statement:
-                      -
-                        Effect: "Allow"
-                        Action:
-                          - "*"
-                        Resource:
-                          - "*"
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+    
+    LambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${Environment}-lambda-test
+        Description: A test lambda
+        Runtime: python3.7
+        Code:
+          S3Bucket: !Sub ${Environment}-s3-lambda-deployment
+          S3Key: test/function.zip
+        Handler: function.lambda_handler
+        Role:
+          Fn::GetAtt:
+            - LambdaRole
+            - Arn
+      DependsOn: LambdaRole
