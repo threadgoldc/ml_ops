@@ -108,20 +108,20 @@ Resources:
                 - Name: SourceZip
               RunOrder: 1
 
-        # - Name: Build
-        #   Actions:
-        #     - Name: BuildImage
-        #       InputArtifacts:
-        #         - Name: SourceZip
-        #       ActionTypeId:
-        #         Category: Build
-        #         Owner: AWS
-        #         Version: 1
-        #         Provider: CodeBuild
-        #       Configuration:
-        #           ProjectName:
-        #             Ref: CodeBuildProject
-        #       RunOrder: 2
+        - Name: Build
+          Actions:
+            - Name: BuildImage
+              InputArtifacts:
+                - Name: SourceZip
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                  ProjectName:
+                    Ref: CodeBuildProject
+              RunOrder: 2
 
         - Name: Deploy
           Actions:
@@ -143,4 +143,4 @@ Resources:
                 StackName: !Sub ${Environment}-deployment-test
                 TemplateConfiguration: SourceZip::cf-templates-params/mlops-resources.json
                 TemplatePath: SourceZip::cf-templates/mlops-resources.yml
-              RunOrder: 2
+              RunOrder: 3
