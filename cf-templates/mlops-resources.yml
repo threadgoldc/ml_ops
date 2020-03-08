@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Description: which branch youre working on
+    Type: String
+    Default: dev
+
+Resources:
+    MLOpsBucket:
+        Type: AWS::S3::Bucket
+        Properties: 
+          BucketName: !Sub ${Environment}-s3-ml-dataset
+          AccessControl: Private
+          VersioningConfiguration:
+            Status: Enabled
+    
+      LambdaFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+          FunctionName: !Sub ${Environment}-lambda-test
+          Description: A test lambda
+          Runtime: python3.7
+          Code:
+            S3Bucket: String
+            S3Key: String
+          Handler: function.lambda_handler
+          Role:
+            Fn::GetAtt:
+              - LambdaRole
+              - Arn
+        DependsOn: LambdaRole
+
+        LambdaRole:
+            Type: AWS::IAM::Role
+            Properties:
+              RoleName: !Sub ${Environment}-role-temporary
+              AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                  -
+                    Effect: "Allow"
+                    Principal:
+                      Service:
+                        - "codepipeline.amazonaws.com"
+                        - "codebuild.amazonaws.com"
+                    Action:
+                      - "sts:AssumeRole"
+              Path: /service-role/
+              Policies:
+                -
+                  PolicyName: "CodeBuildAccessPolicies"
+                  PolicyDocument:
+                    Version: "2012-10-17"
+                    Statement:
+                      -
+                        Effect: "Allow"
+                        Action:
+                          - "*"
+                        Resource:
+                          - "*"

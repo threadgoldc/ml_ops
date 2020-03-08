@@ -16,10 +16,10 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  MLOpsBucket:
+  LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Environment}-s3-mldataset
+      BucketName: !Sub ${Environment}-s3-lambda-deployment
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -120,4 +120,3 @@ Resources:
                   ProjectName:
                     Ref: CodeBuildProject
               RunOrder: 1
-    
