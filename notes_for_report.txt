@@ -1,2 +1,3 @@
 cant resolve ssm-secure in cf templates
 lambda deployment is horrible
+abstraction of codepipeline makes it very hard to debug
