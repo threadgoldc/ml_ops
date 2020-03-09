@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
   Environment:
-    Description: which branch youre working on
+    Description: which git branch youre working on
     Type: String
     Default: dev
 
