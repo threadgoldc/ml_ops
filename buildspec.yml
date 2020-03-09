@@ -22,6 +22,6 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-  artifacts:
-    files:
-      - 'cf-templates-params/*'
+artifacts:
+  files:
+    - 'cf-templates-params/*'
