@@ -105,14 +105,14 @@ Resources:
                 "Branch": "feature-codepipline-test",
                 "OAuthToken": '{{resolve:ssm:github:1}}'}
               OutputArtifacts:
-                - Name: SourceZip
+                - Name: Source
               RunOrder: 1
 
         - Name: Build
           Actions:
             - Name: BuildImage
               InputArtifacts:
-                - Name: SourceZip
+                - Name: Source
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -121,13 +121,16 @@ Resources:
               Configuration:
                   ProjectName:
                     Ref: CodeBuildProject
+              OutputArtifacts:
+                - Name: CFParameters
               RunOrder: 2
 
         - Name: Deploy
           Actions:
-            - Name: DeployImage
+            - Name: DeployLambdas
               InputArtifacts:
-                - Name: SourceZip
+                - Name: Source
+                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -141,6 +144,6 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: !Sub ${Environment}-deployment-test
-                TemplateConfiguration: SourceZip::cf-templates-params/mlops-resources.json
+                TemplateConfiguration: CFParameters::mlops-resources.json
                 TemplatePath: SourceZip::cf-templates/mlops-resources.yml
               RunOrder: 3

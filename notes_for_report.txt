@@ -1,3 +1,4 @@
 cant resolve ssm-secure in cf templates
 lambda deployment is horrible
 abstraction of codepipeline makes it very hard to debug
+stupid zip of github means cant make dynamic git updates during pipeline

@@ -6,6 +6,10 @@ Parameters:
     Type: String
     Default: dev
 
+  LambdaVersion:
+    Description: git hash of lambda verisons to be deployed
+    Type: String
+
 Resources:
     MLOpsBucket:
         Type: AWS::S3::Bucket
@@ -51,7 +55,7 @@ Resources:
         Runtime: python3.7
         Code:
           S3Bucket: !Sub ${Environment}-s3-lambda-deployment
-          S3Key: test/function.zip
+          S3Key: !Sub test/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role:
           Fn::GetAtt:
