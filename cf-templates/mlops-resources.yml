@@ -66,7 +66,7 @@ Resources:
     LambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${Environment}-lambda-test
+        FunctionName: !Sub ${Environment}-lambda-test2
         Description: A test lambda
         Runtime: python3.7
         Code:
