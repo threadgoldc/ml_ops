@@ -24,4 +24,4 @@ phases:
       - echo Build completed on `date`
 artifacts:
   files:
-    - 'cf-templates-params/*'
+    - '**/*'
