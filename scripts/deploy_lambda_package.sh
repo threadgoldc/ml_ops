@@ -13,11 +13,11 @@ do
 
     aws s3 cp function.zip s3://dev-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
 
-    python3 ../../scripts/update_config.py $CODEBUILD_BUILD_ID
-
     rm -rf venv
     rm function.zip
 
     cd ../..
     
 done
+
+python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID

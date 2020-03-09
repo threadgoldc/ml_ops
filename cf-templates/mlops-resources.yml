@@ -62,19 +62,3 @@ Resources:
             - LambdaRole
             - Arn
       DependsOn: LambdaRole
-
-    LambdaFunction:
-      Type: AWS::Lambda::Function
-      Properties:
-        FunctionName: !Sub ${Environment}-lambda-test2
-        Description: A test lambda
-        Runtime: python3.7
-        Code:
-          S3Bucket: !Sub ${Environment}-s3-lambda-deployment
-          S3Key: !Sub test2/${LambdaVersion}.zip
-        Handler: function.lambda_handler
-        Role:
-          Fn::GetAtt:
-            - LambdaRole
-            - Arn
-      DependsOn: LambdaRole
