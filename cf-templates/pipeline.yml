@@ -95,7 +95,7 @@ Resources:
         Location: !Ref PipelineBucket
         Type: S3
       Name: !Sub ${Environment}-pipeline
-      RoleArn: arn:aws:iam::165648330768:role/service-role/AWSCodePipelineServiceRole-us-east-1-test
+      RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
           Actions:
