@@ -77,7 +77,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: 'test'
+        SecretToken: '{{resolve:ssm:github:1}}'
       Filters:
         - 
           JsonPath: "$.ref"
@@ -108,7 +108,7 @@ Resources:
               Configuration:
                 {"Owner": "threadgoldc",
                 "Repo": "ml_ops",
-                "PollForSourceChanges": "true",
+                "PollForSourceChanges": "false",
                 "Branch": "feature-codepipline-test",
                 "OAuthToken": '{{resolve:ssm:github:1}}'}
               OutputArtifacts:
