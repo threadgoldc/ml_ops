@@ -80,21 +80,21 @@ Resources:
       #         Pattern: ^refs/heads/feature-codepipline-test$
       #         ExcludeMatchedPattern: false
 
-  # AppPipelineWebhook:
-  #   Type: AWS::CodePipeline::Webhook
-  #   Properties:
-  #     Authentication: GITHUB_HMAC
-  #     AuthenticationConfiguration:
-  #       SecretToken: {{resolve:secretsmanager:MyGitHubSecret:SecretString:token}}
-  #     Filters:
-  #       - 
-  #         JsonPath: "$.ref"
-  #         MatchEquals: refs/heads/feature-codepipline-test
-  #     TargetPipeline: !Ref Pipeline
-  #     TargetAction: Source
-  #     Name: PipelineWebhook
-  #     TargetPipelineVersion: !GetAtt Pipeline.Version
-  #     RegisterWithThirdParty: true
+  AppPipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: 'test'
+      Filters:
+        - 
+          JsonPath: "$.ref"
+          MatchEquals: refs/heads/feature-codepipline-test
+      TargetPipeline: !Ref Pipeline
+      TargetAction: GithubRepo
+      Name: PipelineWebhook
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      RegisterWithThirdParty: true
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
