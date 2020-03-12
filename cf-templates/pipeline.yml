@@ -5,6 +5,10 @@ Parameters:
     Type: String
     Default: dev
 
+  GitBranchName:
+    Type: String
+    Default: prod
+
 Resources:
 
   PipelineBucket:
@@ -77,10 +81,10 @@ Resources:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
         SecretToken: '{{resolve:ssm:github:1}}'
-      # Filters:
-      #   - 
-      #     JsonPath: "$.ref"
-      #     MatchEquals: refs/heads/dev
+      Filters:
+        - 
+          JsonPath: "$.ref"
+          MatchEquals: !Sub refs/heads/${GitBranchName}
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
@@ -104,11 +108,11 @@ Resources:
                 Owner: ThirdParty
                 Provider: GitHub
                 Version: 1
-              Configuration:
+              Configuration: 
                 {"Owner": "threadgoldc",
                 "Repo": "ml_ops",
                 "PollForSourceChanges": "false",
-                "Branch": "feature-codepipline-test",
+                "Branch": "prod",
                 "OAuthToken": '{{resolve:ssm:github:1}}'}
               OutputArtifacts:
                 - Name: Source
