@@ -1,11 +1,5 @@
 version: 0.2
 
-#env:
-  #variables:
-     # key: "There are no variables"
-  #parameter-store:
-     # key: "There are no variables"
-
 phases:
   install:
     #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
@@ -18,7 +12,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - sh scripts/deploy_lambda_package.sh
+      - sh scripts/deploy_lambda_package.sh 
   post_build:
     commands:
       - echo Build completed on `date`

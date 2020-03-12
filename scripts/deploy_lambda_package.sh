@@ -11,7 +11,9 @@ do
     zip -r9 ./function.zip .
     zip -g function.zip function.py
 
-    aws s3 cp function.zip s3://dev-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
+    USERNAME_OUTPUT=$(aws cloudformation describe-stacks --stack-name pipeline --query "Stacks[0].Outputs[?OutputKey=='UsernameOutput'].OutputValue" --output text)
+
+    aws s3 cp function.zip s3://$USERNAME_OUTPUT-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
 
     rm -rf venv
     rm function.zip

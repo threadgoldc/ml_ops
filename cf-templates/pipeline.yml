@@ -112,7 +112,7 @@ Resources:
                 {"Owner": "threadgoldc",
                 "Repo": "ml_ops",
                 "PollForSourceChanges": "false",
-                "Branch": "prod",
+                "Branch": "feature-own-name",
                 "OAuthToken": '{{resolve:ssm:github:1}}'}
               OutputArtifacts:
                 - Name: Source
@@ -157,3 +157,7 @@ Resources:
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
+
+Outputs:
+  UsernameOutput:
+    Value: !Sub ${Username}
