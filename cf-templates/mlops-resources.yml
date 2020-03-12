@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  Environment:
+    Description: which branch youre working on
+    Type: String
+    Default: dev
+
+  LambdaVersion:
+    Description: git hash of lambda verisons to be deployed
+    Type: String
+
+Resources:
+    MLOpsBucket:
+        Type: AWS::S3::Bucket
+        Properties: 
+          BucketName: !Sub ${Environment}-s3-ml-dataset
+          AccessControl: Private
+          VersioningConfiguration:
+            Status: Enabled
+
+    LambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Environment}-iam-lambda
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "CodeBuildAccessPolicies"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+    
+    LambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${Environment}-lambda-test
+        Description: A test lambda
+        Runtime: python3.7
+        Code:
+          S3Bucket: !Sub ${Environment}-s3-lambda-deployment
+          S3Key: !Sub test/${LambdaVersion}.zip
+        Handler: function.lambda_handler
+        Role:
+          Fn::GetAtt:
+            - LambdaRole
+            - Arn
+      DependsOn: LambdaRole
