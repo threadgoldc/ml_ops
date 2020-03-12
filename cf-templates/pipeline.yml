@@ -109,11 +109,11 @@ Resources:
                 Provider: GitHub
                 Version: 1
               Configuration: 
-                {"Owner": "threadgoldc",
-                "Repo": "ml_ops",
-                "PollForSourceChanges": "false",
-                "Branch": "feature-own-name",
-                "OAuthToken": '{{resolve:ssm:github:1}}'}
+                Owner: "threadgoldc"
+                Repo: "ml_ops"
+                PollForSourceChanges: "false"
+                Branch: !Sub "${GitBranchName}"
+                OAuthToken: '{{resolve:ssm:github:1}}'
               OutputArtifacts:
                 - Name: Source
               RunOrder: 1
