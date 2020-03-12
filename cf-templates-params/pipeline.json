@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "feature-own-name"
+      "ParameterValue": "dev"
     }
 ]
