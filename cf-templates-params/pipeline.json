@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "dev"
+      "ParameterValue": "prod"
     }
 ]
