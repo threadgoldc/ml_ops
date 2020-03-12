@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "prod"
+      "ParameterValue": "feature-own-name"
     }
 ]
