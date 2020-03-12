@@ -153,7 +153,7 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${Username}-deployment-test
+                StackName: !Sub ${Username}-mlops-resources
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
