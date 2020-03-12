@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Environment:
-    Description: which branch youre working on
+  Username:
     Type: String
     Default: dev
 
@@ -14,7 +13,7 @@ Resources:
     MLOpsBucket:
         Type: AWS::S3::Bucket
         Properties: 
-          BucketName: !Sub ${Environment}-s3-ml-dataset
+          BucketName: !Sub ${Username}-s3-ml-dataset
           AccessControl: Private
           VersioningConfiguration:
             Status: Enabled
@@ -22,7 +21,7 @@ Resources:
     LambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Environment}-iam-lambda
+        RoleName: !Sub ${Username}-iam-lambda
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -50,11 +49,11 @@ Resources:
     LambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${Environment}-lambda-test
+        FunctionName: !Sub ${Username}-lambda-test
         Description: A test lambda
         Runtime: python3.7
         Code:
-          S3Bucket: !Sub ${Environment}-s3-lambda-deployment
+          S3Bucket: !Sub ${Username}-s3-lambda-deployment
           S3Key: !Sub test/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role:

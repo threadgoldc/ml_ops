@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Environment:
-    Description: which git branch youre working on
+  Username:
     Type: String
     Default: dev
 
@@ -11,7 +10,7 @@ Resources:
   PipelineBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Environment}-s3-pipeline-artifact
+      BucketName: !Sub ${Username}-s3-pipeline-artifact
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -19,7 +18,7 @@ Resources:
   LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Environment}-s3-lambda-deployment
+      BucketName: !Sub ${Username}-s3-lambda-deployment
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -27,7 +26,7 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${Environment}-iam-codebuild
+      RoleName: !Sub ${Username}-iam-codebuild
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -58,7 +57,7 @@ Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Environment}-codebuild
+      Name: !Sub ${Username}-codebuild
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: no_artifacts
@@ -94,7 +93,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref PipelineBucket
         Type: S3
-      Name: !Sub ${Environment}-pipeline
+      Name: !Sub ${Username}-pipeline
       RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
@@ -150,7 +149,7 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${Environment}-deployment-test
+                StackName: !Sub ${Username}-deployment-test
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
