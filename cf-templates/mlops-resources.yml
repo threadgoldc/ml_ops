@@ -10,6 +10,14 @@ Parameters:
     Type: String
 
 Resources:
+    MLArtifactStore:
+      Type: AWS::S3::Bucket
+      Properties: 
+        BucketName: !Sub ${Username}-s3-ml-artifact
+        AccessControl: Private
+        VersioningConfiguration:
+          Status: Enabled
+
     MLOpsBucket:
         Type: AWS::S3::Bucket
         Properties: 
@@ -61,3 +69,58 @@ Resources:
             - LambdaRole
             - Arn
       DependsOn: LambdaRole
+
+    MLOpsPipelineRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Username}-iam-codebuild
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "codepipeline.amazonaws.com"
+                  - "codebuild.amazonaws.com"
+                  - "codedeploy.amazonaws.com"
+                  - "cloudformation.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "CodeBuildAccessPolicies"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+
+    Pipeline:
+      Type: AWS::CodePipeline::Pipeline
+      Properties:
+        ArtifactStore: 
+          Location: !Ref MLArtifactStore
+          Type: S3
+        Name: !Sub ${Username}-mlops-pipeline
+        RoleArn: !GetAtt MLOpsPipelineRole.Arn
+        Stages:
+          - Name: Source
+            Actions:
+              - Name: S3
+                ActionTypeId:
+                  Category: Source
+                  Owner: AWS
+                  Provider: S3
+                  Version: 1
+                Configuration: 
+                  BucketName: !Ref MyS3Bucket.Name
+                  Extract: true
+                OutputArtifacts:
+                  - Name: Test
+                RunOrder: 1
