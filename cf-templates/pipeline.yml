@@ -77,10 +77,10 @@ Resources:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
         SecretToken: '{{resolve:ssm:github:1}}'
-      Filters:
-        - 
-          JsonPath: "$.ref"
-          MatchEquals: refs/heads/feature-codepipline-test
+      # Filters:
+      #   - 
+      #     JsonPath: "$.ref"
+      #     MatchEquals: refs/heads/dev
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
