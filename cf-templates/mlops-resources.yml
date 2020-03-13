@@ -101,38 +101,51 @@ Resources:
                   Resource:
                     - "*"
 
-    Pipeline:
-      Type: AWS::CodePipeline::Pipeline
+    DeployPipeline:
+      Type: "AWS::CodePipeline::Pipeline"
       Properties:
-        ArtifactStore: 
-          Location: !Ref MLArtifactStore
-          Type: S3
         Name: !Sub ${Username}-mlops-pipeline
-        RoleArn: !GetAtt MLOpsPipelineRole.Arn
+        RoleArn: !Ref MLOpsPipelineRole.Arn
+        ArtifactStore:
+            Type: S3
+            Location: !Ref MLArtifactStore
         Stages:
-          - Name: Source
-            Actions:
-              - Name: S3
-                ActionTypeId:
+          -
+            Name: Source
+            Actions: 
+              - 
+                Name: SourceAction
+                ActionTypeId: 
                   Category: Source
                   Owner: AWS
-                  Provider: S3
                   Version: 1
+                  Provider: S3
+                OutputArtifacts: 
+                  - 
+                    Name: ModelSourceOutput
                 Configuration: 
-                  Bucket: craig-s3-ml-dataset
-                OutputArtifacts:
-                  - Name: Test
+                  S3Bucket: 
+                    !Ref MLOpsBucket
+                  S3ObjectKey: 
+                    !Ref MLOpsBucket/trainingjob.zip
                 RunOrder: 1
-          - Name: LambdaTest
+          -
+            Name: Train
             Actions:
-              - Name: Lambda 
+              -
+                Name: TrainModel
+                InputArtifacts:
+                  - Name: ModelSourceOutput
+                OutputArtifacts:
+                  -
+                    Name: ModelTrainOutput
                 ActionTypeId:
                   Category: Invoke
                   Owner: AWS
-                  Provider: Lambda
                   Version: 1
-                OutputArtifacts: []
+                  Provider: Lambda
                 Configuration:
-                  FunctionName: !Ref LambdaFunction
+                    FunctionName:
+                      Ref: LambdaFunction
                 RunOrder: 1
       DependsOn: LambdaFunction       
