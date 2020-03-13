@@ -26,10 +26,10 @@ Resources:
           VersioningConfiguration:
             Status: Enabled
 
-    LambdaRole:
+    CheckModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-lambda
+        RoleName: !Sub ${Username}-iam-check-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -43,7 +43,35 @@ Resources:
         Path: /service-role/
         Policies:
           -
-            PolicyName: "CodeBuildAccessPolicies"
+            PolicyName: "TempAccessAll"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+
+    TrainModelLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Username}-iam-train-model-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "TempAccessAll"
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
@@ -64,11 +92,21 @@ Resources:
           S3Bucket: !Sub ${Username}-s3-lambda-deployment
           S3Key: !Sub check-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
-        Role:
-          Fn::GetAtt:
-            - LambdaRole
-            - Arn
-      DependsOn: LambdaRole
+        Role: !GetAtt CheckModelLambdaRole
+      DependsOn: CheckModelLambdaRole
+
+    TrainModelLambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${Username}-lambda-train-model
+        Description: A test lambda
+        Runtime: python3.7
+        Code:
+          S3Bucket: !Sub ${Username}-s3-lambda-deployment
+          S3Key: !Sub train-model/${LambdaVersion}.zip
+        Handler: function.lambda_handler
+        Role: !GetAtt TrainModelLambdaRole
+      DependsOn: TrainModelLambdaRole
 
     MLOpsPipelineRole:
       Type: AWS::IAM::Role
@@ -129,10 +167,10 @@ Resources:
                   S3ObjectKey: temp.yml
                 RunOrder: 1
           -
-            Name: Train
+            Name: TrainModel
             Actions:
               -
-                Name: TrainModel
+                Name: TrainModelAction
                 InputArtifacts:
                   - Name: ModelSourceOutput
                 OutputArtifacts:
@@ -150,7 +188,7 @@ Resources:
             Name: TrainApproval
             Actions:
               -
-                Name: ApproveTrain
+                Name: TrainApprovalAction
                 ActionTypeId:
                   Category: Approval
                   Owner: AWS
@@ -159,6 +197,24 @@ Resources:
                 Configuration:
                     CustomData: 'Was this model trained successfully?'
                 RunOrder: 3
+          -
+            Name: CheckModel
+            Actions:
+              -
+                Name: TrainModel
+                InputArtifacts:
+                  - Name: ModelTrainOutput
+                OutputArtifacts:
+                  -
+                    Name: CheckModelOutput
+                ActionTypeId:
+                  Category: Invoke
+                  Owner: AWS
+                  Version: 1
+                  Provider: Lambda
+                Configuration:
+                    FunctionName: !Ref TrainModelLambdaFunction
+                RunOrder: 4
       DependsOn: 
         - CheckModelLambdaFunction 
         - MLOpsPipelineRole 
