@@ -145,7 +145,7 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref LambdaFunction
-                RunOrder: 1
+                RunOrder: 2
           - 
             Name: TrainApproval
             Actions:
@@ -158,7 +158,7 @@ Resources:
                   Provider: Manual
                 Configuration:
                     CustomData: 'Was this model trained successfully?'
-                RunOrder: 1
+                RunOrder: 3
       DependsOn: 
         - LambdaFunction 
         - MLOpsPipelineRole 
