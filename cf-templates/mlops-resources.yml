@@ -119,7 +119,7 @@ Resources:
                   Provider: S3
                   Version: 1
                 Configuration: 
-                  BucketName: !Ref MLOpsBucket.Name
+                  BucketName: craig-s3-ml-dataset
                   Extract: true
                 OutputArtifacts:
                   - Name: Test
