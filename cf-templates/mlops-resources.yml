@@ -73,7 +73,7 @@ Resources:
     MLOpsPipelineRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-codebuild
+        RoleName: !Sub ${Username}-iam-pipeline
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
