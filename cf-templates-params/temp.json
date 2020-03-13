@@ -1,0 +1,10 @@
+[
+    {
+      "ParameterKey": "Username",
+      "ParameterValue": "craig"
+    },
+    {
+      "ParameterKey": "LambdaVersion",
+      "ParameterValue": "craig-codebuild:8b625393-8ee4-442d-96dc-f87c786fd108"
+    }
+]

@@ -119,8 +119,20 @@ Resources:
                   Provider: S3
                   Version: 1
                 Configuration: 
-                  BucketName: craig-s3-ml-dataset
-                  Extract: true
+                  Bucket: craig-s3-ml-dataset
                 OutputArtifacts:
                   - Name: Test
                 RunOrder: 1
+          - Name: LambdaTest
+            Actions:
+              - Name: Lambda 
+                ActionTypeId:
+                  Category: Invoke
+                  Owner: AWS
+                  Provider: Lambda
+                  Version: 1
+                OutputArtifacts: []
+                Configuration:
+                  FunctionName: !Ref LambdaFunction
+                RunOrder: 1
+      DependsOn: LambdaFunction       
