@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "LambdaVersion",
-      "ParameterValue": "craig-codebuild:8b625393-8ee4-442d-96dc-f87c786fd108"
+      "ParameterValue": "craig-codebuild:c6eb73e8-eb92-471a-9ca6-4af3b05ae1f0"
     }
 ]

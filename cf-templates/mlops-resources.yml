@@ -85,6 +85,7 @@ Resources:
                   - "codebuild.amazonaws.com"
                   - "codedeploy.amazonaws.com"
                   - "cloudformation.amazonaws.com"
+                  - "lambda.amazonaws.com"
               Action:
                 - "sts:AssumeRole"
         Path: /service-role/
@@ -125,7 +126,7 @@ Resources:
                     Name: ModelSourceOutput
                 Configuration: 
                   S3Bucket: !Ref MLOpsBucket
-                  S3ObjectKey: !Sub ${Username}-s3-ml-dataset
+                  S3ObjectKey: temp.yml
                 RunOrder: 1
           -
             Name: Train
@@ -143,8 +144,7 @@ Resources:
                   Version: 1
                   Provider: Lambda
                 Configuration:
-                    FunctionName:
-                      Ref: LambdaFunction
+                    FunctionName: !Ref LambdaFunction
                 RunOrder: 2
       DependsOn: 
         - LambdaFunction 
