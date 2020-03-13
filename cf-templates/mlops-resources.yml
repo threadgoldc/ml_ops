@@ -54,15 +54,15 @@ Resources:
                   Resource:
                     - "*"
     
-    LambdaFunction:
+    CheckModelLambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${Username}-lambda-test
+        FunctionName: !Sub ${Username}-lambda-check-model
         Description: A test lambda
         Runtime: python3.7
         Code:
           S3Bucket: !Sub ${Username}-s3-lambda-deployment
-          S3Key: !Sub test/${LambdaVersion}.zip
+          S3Key: !Sub check-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role:
           Fn::GetAtt:
@@ -144,7 +144,7 @@ Resources:
                   Version: 1
                   Provider: Lambda
                 Configuration:
-                    FunctionName: !Ref LambdaFunction
+                    FunctionName: !Ref CheckModelLambdaFunction
                 RunOrder: 2
           - 
             Name: TrainApproval
@@ -160,6 +160,6 @@ Resources:
                     CustomData: 'Was this model trained successfully?'
                 RunOrder: 3
       DependsOn: 
-        - LambdaFunction 
+        - CheckModelLambdaFunction 
         - MLOpsPipelineRole 
         - MLOpsBucket    
