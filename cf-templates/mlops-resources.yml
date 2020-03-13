@@ -92,7 +92,10 @@ Resources:
           S3Bucket: !Sub ${Username}-s3-lambda-deployment
           S3Key: !Sub check-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
-        Role: !GetAtt CheckModelLambdaRole
+        Role: 
+          Fn::GetAtt:
+            - CheckModelLambdaRole
+            - Arn
       DependsOn: CheckModelLambdaRole
 
     TrainModelLambdaFunction:
@@ -105,7 +108,10 @@ Resources:
           S3Bucket: !Sub ${Username}-s3-lambda-deployment
           S3Key: !Sub train-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
-        Role: !GetAtt TrainModelLambdaRole
+        Role: 
+          Fn::GetAtt:
+            - CheckModelLambdaRole
+            - Arn
       DependsOn: TrainModelLambdaRole
 
     MLOpsPipelineRole:
@@ -217,5 +223,6 @@ Resources:
                 RunOrder: 4
       DependsOn: 
         - CheckModelLambdaFunction 
+        - TrainModelLambdaFunction
         - MLOpsPipelineRole 
         - MLOpsBucket    
