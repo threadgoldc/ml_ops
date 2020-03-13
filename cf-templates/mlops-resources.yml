@@ -145,7 +145,20 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref LambdaFunction
-                RunOrder: 2
+                RunOrder: 1
+          - 
+            Name: TrainApproval
+            Actions:
+              -
+                Name: ApproveTrain
+                ActionTypeId:
+                  Category: Approval
+                  Owner: AWS
+                  Version: 1
+                  Provider: Manual
+                Configuration:
+                    CustomData: 'Was this model trained successfully?'
+                RunOrder: 1
       DependsOn: 
         - LambdaFunction 
         - MLOpsPipelineRole 
