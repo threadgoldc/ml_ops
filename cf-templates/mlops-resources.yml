@@ -119,7 +119,7 @@ Resources:
                   Provider: S3
                   Version: 1
                 Configuration: 
-                  BucketName: !Ref MyS3Bucket.Name
+                  BucketName: !Ref MLOpsBucket.Name
                   Extract: true
                 OutputArtifacts:
                   - Name: Test
