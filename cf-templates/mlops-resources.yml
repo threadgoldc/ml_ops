@@ -105,7 +105,7 @@ Resources:
       Type: "AWS::CodePipeline::Pipeline"
       Properties:
         Name: !Sub ${Username}-mlops-pipeline
-        RoleArn: !Ref MLOpsPipelineRole.Arn
+        RoleArn: !GetAtt MLOpsPipelineRole.Arn
         ArtifactStore:
             Type: S3
             Location: !Ref MLArtifactStore
@@ -124,10 +124,8 @@ Resources:
                   - 
                     Name: ModelSourceOutput
                 Configuration: 
-                  S3Bucket: 
-                    !Ref MLOpsBucket
-                  S3ObjectKey: 
-                    !Ref MLOpsBucket/trainingjob.zip
+                  S3Bucket: !Ref MLOpsBucket
+                  S3ObjectKey: !Sub ${Username}-s3-ml-dataset
                 RunOrder: 1
           -
             Name: Train
@@ -147,5 +145,8 @@ Resources:
                 Configuration:
                     FunctionName:
                       Ref: LambdaFunction
-                RunOrder: 1
-      DependsOn: LambdaFunction       
+                RunOrder: 2
+      DependsOn: 
+        - LambdaFunction 
+        - MLOpsPipelineRole 
+        - MLOpsBucket    
