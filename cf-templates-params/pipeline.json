@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "feature-s3-cf-trigger"
+      "ParameterValue": "dev"
     }
 ]
