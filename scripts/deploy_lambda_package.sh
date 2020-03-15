@@ -24,4 +24,4 @@ done
 
 python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
 
-git clone https://github.com/threadgoldc/ml_ops.git
+git clone git@github.com:threadgoldc/ml_ops.git
