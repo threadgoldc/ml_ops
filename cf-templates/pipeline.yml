@@ -64,6 +64,9 @@ Resources:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: no_artifacts
+      Source:
+        BuildSpec: test_buildspec.yml
+        Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -138,7 +141,7 @@ Resources:
           Actions:
             - Name: BuildImage
               InputArtifacts:
-                - Name: Source::test_buildspec.yml
+                - Name: Source
               ActionTypeId:
                 Category: Build
                 Owner: AWS
