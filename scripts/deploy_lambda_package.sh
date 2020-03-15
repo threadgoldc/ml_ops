@@ -24,4 +24,4 @@ done
 
 python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
 
-printenv
+git clone https://github.com/threadgoldc/ml_ops.git
