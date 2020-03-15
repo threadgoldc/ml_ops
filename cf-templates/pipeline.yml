@@ -74,6 +74,23 @@ Resources:
         Location: https://github.com/threadgoldc/ml_ops.git
         Type: GITHUB
 
+  # CodeBuildProjectDevCommit:
+  #   Type: AWS::CodeBuild::Project
+  #   Properties:
+  #     Name: !Sub ${Username}-codebuild-dev-commit
+  #     ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+  #     Artifacts:
+  #       Type: no_artifacts
+  #     Environment:
+  #       Type: LINUX_CONTAINER
+  #       ComputeType: BUILD_GENERAL1_SMALL
+  #       Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+  #     Source:
+  #       Auth:
+  #         Type: OAUTH
+  #       Location: https://github.com/threadgoldc/ml_ops.git
+  #       Type: GITHUB
+
   AppPipelineWebhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
@@ -121,7 +138,7 @@ Resources:
           Actions:
             - Name: BuildImage
               InputArtifacts:
-                - Name: Source
+                - Name: Source::test_buildspec.yml
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -156,6 +173,19 @@ Resources:
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
+        # - 
+        #   Name: MRToDevApproval
+        #   Actions:
+        #     -
+        #       Name: MRToDevApprovalAction
+        #       ActionTypeId:
+        #         Category: Approval
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: Manual
+        #       Configuration:
+        #           CustomData: 'Do you want to commit this change to Dev?'
+        #       RunOrder: 4
 
 Outputs:
   UsernameOutput:
