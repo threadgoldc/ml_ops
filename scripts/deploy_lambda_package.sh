@@ -29,9 +29,9 @@ GITHUB_TOKEN=${TOKEN//[^[:alnum:]]/}
 
 hub clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git
 
-# cd ml_ops
+cd ml_ops
 
-# hub fetch 
+hub fetch 
 
 # hub pull-request -m "Implemented feature X" -b threadgoldc:feature-add-dev-prod -h threadgoldc:dev
 
