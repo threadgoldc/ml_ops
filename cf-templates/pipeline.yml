@@ -65,7 +65,7 @@ Resources:
       Artifacts:
         Type: no_artifacts
       Source:
-        BuildSpec: test_buildspec.yml
+        BuildSpec: buildspecs/build_artifacts.yml
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
