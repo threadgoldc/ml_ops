@@ -5,6 +5,6 @@
     },
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "prod"
+      "ParameterValue": "feature-add-dev-prod"
     }
 ]
