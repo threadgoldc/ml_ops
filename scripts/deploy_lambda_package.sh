@@ -33,8 +33,8 @@ cd ml_ops
 
 hub fetch 
 
-# hub pull-request -m "Implemented feature X" -b threadgoldc:feature-add-dev-prod -h threadgoldc:dev
+hub pull-request -m "Implemented feature X" -b threadgoldc:feature-add-dev-prod -h threadgoldc:dev
 
-# cd ..
+cd ..
 
-# rm -rf ml_ops
+rm -rf ml_ops
