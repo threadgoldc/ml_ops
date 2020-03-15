@@ -23,3 +23,9 @@ do
 done
 
 python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
+
+git add . 
+
+git commit -m 'test'
+
+git push
