@@ -24,4 +24,4 @@ done
 
 python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
 
-echo $CODEBUILD_WEBHOOK_TRIGGER
+printenv
