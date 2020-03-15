@@ -24,4 +24,16 @@ done
 
 python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
 
-git clone git@github.com:threadgoldc/ml_ops.git
+export GITHUB_TOKEN=${$(aws ssm get-parameter --name github --query Parameter.Value)//[^[:alnum:]]/}
+
+hub clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git
+
+# cd ml_ops
+
+# hub fetch 
+
+# hub pull-request -m "Implemented feature X" -b threadgoldc:feature-add-dev-prod -h threadgoldc:dev
+
+# cd ..
+
+# rm -rf ml_ops

@@ -3,3 +3,4 @@ lambda deployment is horrible
 abstraction of codepipeline makes it very hard to debug
 stupid zip of github means cant make dynamic git updates during pipeline
 codepipeline doesnt go to next stage when lambda is finished, api call has to be made
+shit integration with github. Surely should have pull requests within codedeploy
