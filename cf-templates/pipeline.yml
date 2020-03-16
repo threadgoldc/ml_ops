@@ -196,8 +196,6 @@ Resources:
               Configuration:
                   ProjectName:
                     Ref: MRPushGitCodeBuildProject
-              # OutputArtifacts:
-              #   - Name: CFParameters
               RunOrder: 5
 
 Outputs:
