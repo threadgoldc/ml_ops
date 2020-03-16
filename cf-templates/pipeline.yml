@@ -63,19 +63,14 @@ Resources:
       Name: !Sub ${Username}-codebuild
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
-        Type: no_artifacts
+        Type: CODEPIPELINE
       Source:
-        BuildSpec: build_artifacts.yml
+        BuildSpec: buildspecs/build_artifacts.yml
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
-      Source:
-        Auth:
-          Type: OAUTH
-        Location: https://github.com/threadgoldc/ml_ops.git
-        Type: GITHUB
 
   # CodeBuildProjectDevCommit:
   #   Type: AWS::CodeBuild::Project

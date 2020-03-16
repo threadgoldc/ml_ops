@@ -35,4 +35,10 @@ cd ml_ops
 
 hub fetch 
 
-hub pull-request -m "Implemented feature X" -b threadgoldc:dev -h threadgoldc:feature-add-dev-prod
+{ # try
+
+    hub pull-request -m "automated pull request to dev" -b threadgoldc:dev -h threadgoldc:feature-add-dev-prod
+
+} || { # catch
+    echo 'Skipping adding pull request'
+}
