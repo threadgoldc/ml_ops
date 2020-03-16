@@ -65,7 +65,7 @@ Resources:
       Artifacts:
         Type: CODEPIPELINE
       Source:
-        BuildSpec: build_artifacts.yml
+        BuildSpec: buildspecs/build_artifacts.yml
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
