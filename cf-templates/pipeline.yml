@@ -57,37 +57,35 @@ Resources:
                 Resource:
                   - "*"
 
-  CodeBuildProject:
+  LambdaDeployCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Username}-codebuild
+      Name: !Sub ${Username}-codebuild-lambda-deploy
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: CODEPIPELINE
       Source:
-        BuildSpec: buildspecs/build_artifacts.yml
+        BuildSpec: buildspecs/build-lambda-deploy.yml
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
 
-  # CodeBuildProjectDevCommit:
-  #   Type: AWS::CodeBuild::Project
-  #   Properties:
-  #     Name: !Sub ${Username}-codebuild-dev-commit
-  #     ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-  #     Artifacts:
-  #       Type: no_artifacts
-  #     Environment:
-  #       Type: LINUX_CONTAINER
-  #       ComputeType: BUILD_GENERAL1_SMALL
-  #       Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
-  #     Source:
-  #       Auth:
-  #         Type: OAUTH
-  #       Location: https://github.com/threadgoldc/ml_ops.git
-  #       Type: GITHUB
+  MRPushGitCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${Username}-codebuild-mr-push-git
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        BuildSpec: buildspecs/build-mr-push-git.yml
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
 
   AppPipelineWebhook:
     Type: AWS::CodePipeline::Webhook
@@ -132,7 +130,7 @@ Resources:
                 - Name: Source
               RunOrder: 1
 
-        - Name: Build
+        - Name: BuildLambda
           Actions:
             - Name: BuildImage
               InputArtifacts:
@@ -144,12 +142,12 @@ Resources:
                 Provider: CodeBuild
               Configuration:
                   ProjectName:
-                    Ref: CodeBuildProject
+                    Ref: LambdaDeployCodeBuildProject
               OutputArtifacts:
                 - Name: CFParameters
               RunOrder: 2
 
-        - Name: Deploy
+        - Name: DeployLambda
           Actions:
             - Name: DeployLambdas
               InputArtifacts:
@@ -171,19 +169,36 @@ Resources:
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
-        # - 
-        #   Name: MRToDevApproval
-        #   Actions:
-        #     -
-        #       Name: MRToDevApprovalAction
-        #       ActionTypeId:
-        #         Category: Approval
-        #         Owner: AWS
-        #         Version: 1
-        #         Provider: Manual
-        #       Configuration:
-        #           CustomData: 'Do you want to commit this change to Dev?'
-        #       RunOrder: 4
+
+        - Name: MRToDevApproval
+          Actions:
+            -
+              Name: MRToDevApprovalAction
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                  CustomData: 'Do you want to commit this change to Dev?'
+              RunOrder: 4
+
+        - Name: BuildGitMRPush
+          Actions:
+            - Name: BuildImage
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                  ProjectName:
+                    Ref: MRPushGitCodeBuildProject
+              # OutputArtifacts:
+              #   - Name: CFParameters
+              RunOrder: 5
 
 Outputs:
   UsernameOutput:

@@ -6,8 +6,6 @@ phases:
     #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
     runtime-versions:
        python: 3.7
-    commands:
-      - yum -y install hub
   pre_build:
     commands:
       - pip install -r requirements.txt
