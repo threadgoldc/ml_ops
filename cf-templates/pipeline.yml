@@ -67,6 +67,9 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        EnvironmentVariables: 
+          - Name: TEST 
+            Value: test
 
   MRPushGitCodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -193,6 +196,101 @@ Resources:
                   ProjectName:
                     Ref: MRPushGitCodeBuildProject
               RunOrder: 5
+  
+  DevPipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore: 
+        Location: !Ref PipelineBucket
+        Type: S3
+      Name: !Sub dev-pipeline
+      RoleArn: !GetAtt CodeBuildServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GithubRepo
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration: 
+                Owner: "threadgoldc"
+                Repo: "ml_ops"
+                PollForSourceChanges: "false"
+                Branch: "dev"
+                OAuthToken: '{{resolve:ssm:github:1}}'
+              OutputArtifacts:
+                - Name: Source
+              RunOrder: 1
+
+        # - Name: BuildLambda
+        #   Actions:
+        #     - Name: BuildImage
+        #       InputArtifacts:
+        #         - Name: Source
+        #       ActionTypeId:
+        #         Category: Build
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: CodeBuild
+        #       Configuration:
+        #           ProjectName:
+        #             Ref: LambdaDeployCodeBuildProject
+        #       OutputArtifacts:
+        #         - Name: CFParameters
+        #       RunOrder: 2
+
+        # - Name: DeployLambda
+        #   Actions:
+        #     - Name: DeployLambdas
+        #       InputArtifacts:
+        #         - Name: Source
+        #         - Name: CFParameters
+        #       ActionTypeId:
+        #         Category: Deploy
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: CloudFormation
+        #       OutputArtifacts:
+        #         - Name: DeployStack
+        #       Configuration:
+        #         ActionMode: CREATE_UPDATE
+        #         RoleArn:
+        #           Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+        #         Capabilities: CAPABILITY_NAMED_IAM
+        #         StackName: !Sub ${GitBranchName}-mlops-resources
+        #         TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
+        #         TemplatePath: Source::cf-templates/mlops-resources.yml
+        #       RunOrder: 3
+
+        # - Name: MRToDevApproval
+        #   Actions:
+        #     -
+        #       Name: MRToDevApprovalAction
+        #       ActionTypeId:
+        #         Category: Approval
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: Manual
+        #       Configuration:
+        #           CustomData: 'Do you want to commit this change to Dev?'
+        #       RunOrder: 4
+
+        # - Name: BuildGitMRPush
+        #   Actions:
+        #     - Name: BuildImage
+        #       InputArtifacts:
+        #         - Name: Source
+        #       ActionTypeId:
+        #         Category: Build
+        #         Owner: AWS
+        #         Version: 1
+        #         Provider: CodeBuild
+        #       Configuration:
+        #           ProjectName:
+        #             Ref: MRPushGitCodeBuildProject
+        #       RunOrder: 5
 
 Outputs:
   GitBranchNameOutput:
