@@ -4,10 +4,6 @@ Parameters:
   Username:
     Type: String
 
-  GitBranchName:
-    Type: String
-    Default: prod
-
 Resources:
 
   PipelineBucket:
@@ -96,7 +92,7 @@ Resources:
       Filters:
         - 
           JsonPath: "$.ref"
-          MatchEquals: !Sub refs/heads/${GitBranchName}
+          MatchEquals: refs/heads/feature-*
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
