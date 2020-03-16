@@ -2,5 +2,9 @@
     {
       "ParameterKey": "Username",
       "ParameterValue": "craig"
-    }
+    },
+    {
+      "ParameterKey": "GitBranchName",
+      "ParameterValue": "feature-add-dev-prod"
+    },
 ]

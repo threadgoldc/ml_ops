@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Username:
+  GitBranchName:
     Type: String
 
 Resources:
@@ -9,7 +9,7 @@ Resources:
   PipelineBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Username}-s3-pipeline-artifact
+      BucketName: !Sub ${GitBranchName}-s3-pipeline-artifact
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -17,7 +17,7 @@ Resources:
   LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Username}-s3-lambda-deployment
+      BucketName: !Sub ${GitBranchName}-s3-lambda-deployment
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -25,7 +25,7 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${Username}-iam-codebuild
+      RoleName: !Sub ${GitBranchName}-iam-codebuild
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -56,7 +56,7 @@ Resources:
   LambdaDeployCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Username}-codebuild-lambda-deploy
+      Name: !Sub ${GitBranchName}-codebuild-lambda-deploy
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -71,7 +71,7 @@ Resources:
   MRPushGitCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Username}-codebuild-mr-push-git
+      Name: !Sub ${GitBranchName}-codebuild-mr-push-git
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -92,7 +92,7 @@ Resources:
       Filters:
         - 
           JsonPath: "$.ref"
-          MatchEquals: refs/heads/feature-*
+          MatchEquals: !Sub refs/heads/${GitBranchName}
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
@@ -105,7 +105,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref PipelineBucket
         Type: S3
-      Name: !Sub ${Username}-pipeline
+      Name: !Sub ${GitBranchName}-pipeline
       RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
@@ -161,7 +161,7 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${Username}-mlops-resources
+                StackName: !Sub ${GitBranchName}-mlops-resources
                 TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
@@ -195,5 +195,5 @@ Resources:
               RunOrder: 5
 
 Outputs:
-  UsernameOutput:
-    Value: !Sub ${Username}
+  GitBranchNameOutput:
+    Value: !Sub ${GitBranchName}

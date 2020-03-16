@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Username:
+  GitBranchName:
     Type: String
     Default: dev
 
@@ -13,7 +13,7 @@ Resources:
     MLArtifactStore:
       Type: AWS::S3::Bucket
       Properties: 
-        BucketName: !Sub ${Username}-s3-ml-artifact
+        BucketName: !Sub ${GitBranchName}-s3-ml-artifact
         AccessControl: Private
         VersioningConfiguration:
           Status: Enabled
@@ -21,7 +21,7 @@ Resources:
     MLOpsBucket:
         Type: AWS::S3::Bucket
         Properties: 
-          BucketName: !Sub ${Username}-s3-ml-dataset
+          BucketName: !Sub ${GitBranchName}-s3-ml-dataset
           AccessControl: Private
           VersioningConfiguration:
             Status: Enabled
@@ -29,7 +29,7 @@ Resources:
     CheckModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-check-model-role
+        RoleName: !Sub ${GitBranchName}-iam-check-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -57,7 +57,7 @@ Resources:
     TrainModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-train-model-role
+        RoleName: !Sub ${GitBranchName}-iam-train-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -85,11 +85,11 @@ Resources:
     CheckModelLambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${Username}-lambda-check-model
+        FunctionName: !Sub ${GitBranchName}-lambda-check-model
         Description: A test lambda
         Runtime: python3.7
         Code:
-          S3Bucket: !Sub ${Username}-s3-lambda-deployment
+          S3Bucket: !Sub ${GitBranchName}-s3-lambda-deployment
           S3Key: !Sub check-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role: 
@@ -101,11 +101,11 @@ Resources:
     TrainModelLambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${Username}-lambda-train-model
+        FunctionName: !Sub ${GitBranchName}-lambda-train-model
         Description: A test lambda
         Runtime: python3.7
         Code:
-          S3Bucket: !Sub ${Username}-s3-lambda-deployment
+          S3Bucket: !Sub ${GitBranchName}-s3-lambda-deployment
           S3Key: !Sub train-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role: 
@@ -117,7 +117,7 @@ Resources:
     MLOpsPipelineRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-pipeline
+        RoleName: !Sub ${GitBranchName}-iam-pipeline
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -149,7 +149,7 @@ Resources:
     DeployPipeline:
       Type: "AWS::CodePipeline::Pipeline"
       Properties:
-        Name: !Sub ${Username}-mlops-pipeline
+        Name: !Sub ${GitBranchName}-mlops-pipeline
         RoleArn: !GetAtt MLOpsPipelineRole.Arn
         ArtifactStore:
             Type: S3
