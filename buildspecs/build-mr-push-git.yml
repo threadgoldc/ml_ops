@@ -14,7 +14,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - sh scripts/mr-push-git.sh.sh 
+      - sh scripts/mr-push-git.sh 
   post_build:
     commands:
       - echo Build completed on `date`
