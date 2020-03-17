@@ -185,6 +185,19 @@ Resources:
                 StackName: dev-mlops-resources
               RunOrder: 4
 
+        - Name: MergeToProdApproval
+          Actions:
+            -
+              Name: MRToProdApprovalAction
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                  CustomData: 'Do you want to commit this change to Prod?'
+              RunOrder: 5
+
         - Name: BuildGitProdPush
           Actions:
             - Name: BuildImage
@@ -198,20 +211,30 @@ Resources:
               Configuration:
                   ProjectName:
                     Ref: MRPushGitCodeBuildProject
-              RunOrder: 5
+              RunOrder: 6
 
-        - Name: MergeToProdApproval
+        - Name: DeployProd
           Actions:
-            -
-              Name: MRToDevApprovalAction
+            - Name: DeployProd
+              InputArtifacts:
+                - Name: Source
+                - Name: CFParameters
               ActionTypeId:
-                Category: Approval
+                Category: Deploy
                 Owner: AWS
                 Version: 1
-                Provider: Manual
+                Provider: CloudFormation
+              OutputArtifacts:
+                - Name: DeployStack
               Configuration:
-                  CustomData: 'Do you want to commit this change to Test?'
-              RunOrder: 6
+                ActionMode: CREATE_UPDATE
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: prod-mlops-resources
+                TemplateConfiguration: CFParameters::cf-templates-params/prod/mlops-resources.json
+                TemplatePath: Source::cf-templates/mlops-resources.yml
+              RunOrder: 7
 
 Outputs:
   GitBranchNameOutput:

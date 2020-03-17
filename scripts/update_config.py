@@ -2,7 +2,7 @@ import json
 from sys import argv
 
 def update_config(git_hash):
-    for environment in ['dev', 'prod']:
+    for environment in ['dev', 'test', 'prod']:
 
         with open('./cf-templates-params/%s/mlops-resources.json' % environment) as json_file:
             data = json.load(json_file)
