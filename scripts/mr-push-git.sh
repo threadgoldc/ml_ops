@@ -7,12 +7,10 @@ hub clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git
 
 cd ml_ops
 
-hub fetch 
+git fetch 
 
-{ # try
+git checkout test
 
-    hub pull-request -m "automated pull request to dev" -b threadgoldc:dev -h threadgoldc:feature-add-dev-prod
+git merge origin/feature-add-dev-prod -m 'merging to test'
 
-} || { # catch
-    echo 'Skipping adding pull request'
-}
+git push

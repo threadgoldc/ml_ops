@@ -53,15 +53,15 @@ Resources:
                 Resource:
                   - "*"
 
-  LambdaDeployCodeBuildProject:
+  ArtifactCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${GitBranchName}-codebuild-lambda-deploy
+      Name: !Sub ${GitBranchName}-codebuild-artifacts
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
         Type: CODEPIPELINE
       Source:
-        BuildSpec: buildspecs/build-lambda-deploy.yml
+        BuildSpec: buildspecs/build-artifacts.yml
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
@@ -95,7 +95,7 @@ Resources:
       Filters:
         - 
           JsonPath: "$.ref"
-          MatchEquals: !Sub refs/heads/${GitBranchName}
+          MatchEquals: !Sub refs/heads/dev
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
@@ -129,7 +129,7 @@ Resources:
                 - Name: Source
               RunOrder: 1
 
-        - Name: BuildLambda
+        - Name: BuildArtifacts
           Actions:
             - Name: BuildImage
               InputArtifacts:
@@ -141,7 +141,7 @@ Resources:
                 Provider: CodeBuild
               Configuration:
                   ProjectName:
-                    Ref: LambdaDeployCodeBuildProject
+                    Ref: ArtifactCodeBuildProject
               OutputArtifacts:
                 - Name: CFParameters
               RunOrder: 2
@@ -182,7 +182,7 @@ Resources:
                   CustomData: 'Do you want to commit this change to Test?'
               RunOrder: 4
 
-        - Name: BuildGitMRPush
+        - Name: BuildGitTestPush
           Actions:
             - Name: BuildImage
               InputArtifacts:

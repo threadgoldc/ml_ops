@@ -5,3 +5,5 @@ stupid zip of github means cant make dynamic git updates during pipeline
 codepipeline doesnt go to next stage when lambda is finished, api call has to be made
 shit integration with github. Surely should have pull requests within codedeploy
 aws seems to be basing the deployments not based on git branch but on testing. But how do you then review code? this seems shit 
+why for cf stack does the template have to be in s3. why. how do you automate this now?
+with so many rapid commits, it makes no sense to have to initialise a codebuild instance every time
