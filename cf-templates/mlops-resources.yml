@@ -89,7 +89,7 @@ Resources:
         Description: A test lambda
         Runtime: python3.7
         Code:
-          S3Bucket: !Sub ${GitBranchName}-s3-lambda-deployment
+          S3Bucket: !Sub uva-s3-lambda-deployment
           S3Key: !Sub check-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role: 
@@ -105,7 +105,7 @@ Resources:
         Description: A test lambda
         Runtime: python3.7
         Code:
-          S3Bucket: !Sub ${GitBranchName}-s3-lambda-deployment
+          S3Bucket: !Sub uva-s3-lambda-deployment
           S3Key: !Sub train-model/${LambdaVersion}.zip
         Handler: function.lambda_handler
         Role: 
