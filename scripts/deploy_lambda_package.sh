@@ -13,6 +13,12 @@ do
 
     aws s3 cp function.zip s3://$GIT_BRANCH_NAME-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
 
+    aws s3 cp function.zip s3://dev-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
+
+    aws s3 cp function.zip s3://test-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
+
+    aws s3 cp function.zip s3://prod-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
+
     rm -rf venv
     rm function.zip
 

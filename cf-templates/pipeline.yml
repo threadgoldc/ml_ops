@@ -123,7 +123,7 @@ Resources:
                 Owner: "threadgoldc"
                 Repo: "ml_ops"
                 PollForSourceChanges: "false"
-                Branch: !Sub "${GitBranchName}"
+                Branch: "dev"
                 OAuthToken: '{{resolve:ssm:github:1}}'
               OutputArtifacts:
                 - Name: Source
@@ -164,8 +164,8 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${GitBranchName}-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
+                StackName: !Sub dev-mlops-resources
+                TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
 
