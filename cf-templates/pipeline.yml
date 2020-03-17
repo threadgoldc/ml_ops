@@ -143,9 +143,9 @@ Resources:
                 - Name: CFParameters
               RunOrder: 2
 
-        - Name: DeployLambda
+        - Name: DeployDev
           Actions:
-            - Name: DeployLambdas
+            - Name: DeployDev
               InputArtifacts:
                 - Name: Source
                 - Name: CFParameters
@@ -161,25 +161,31 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub dev-mlops-resources
+                StackName: dev-mlops-resources
                 TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
 
-        - Name: MergeToTestApproval
+        - Name: DeleteDev
           Actions:
-            -
-              Name: MRToDevApprovalAction
+            - Name: DeleteDev
+              InputArtifacts:
+                - Name: Source
+                - Name: CFParameters
               ActionTypeId:
-                Category: Approval
+                Category: Deploy
                 Owner: AWS
                 Version: 1
-                Provider: Manual
+                Provider: CloudFormation
               Configuration:
-                  CustomData: 'Do you want to commit this change to Test?'
+                ActionMode: DELETE_ONLY
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: dev-mlops-resources
               RunOrder: 4
 
-        - Name: BuildGitTestPush
+        - Name: BuildGitProdPush
           Actions:
             - Name: BuildImage
               InputArtifacts:
@@ -193,6 +199,19 @@ Resources:
                   ProjectName:
                     Ref: MRPushGitCodeBuildProject
               RunOrder: 5
+
+        - Name: MergeToProdApproval
+          Actions:
+            -
+              Name: MRToDevApprovalAction
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                  CustomData: 'Do you want to commit this change to Test?'
+              RunOrder: 6
 
 Outputs:
   GitBranchNameOutput:

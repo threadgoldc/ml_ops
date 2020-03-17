@@ -9,8 +9,8 @@ cd ml_ops
 
 git fetch 
 
-git checkout test
+git checkout prod
 
-git merge origin/feature-add-dev-prod -m 'merging to test'
+git merge origin/dev -m 'merging to prod'
 
 git push
