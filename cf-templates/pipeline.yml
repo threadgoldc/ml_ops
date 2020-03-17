@@ -108,7 +108,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref PipelineBucket
         Type: S3
-      Name: !Sub ${GitBranchName}-pipeline
+      Name: !Sub deployment-pipeline
       RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
