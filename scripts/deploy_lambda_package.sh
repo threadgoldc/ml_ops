@@ -20,4 +20,4 @@ do
     
 done
 
-python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID
+python3 ./scripts/update_config.py $CODEBUILD_BUILD_ID $GIT_BRANCH_NAME

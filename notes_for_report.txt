@@ -4,3 +4,4 @@ abstraction of codepipeline makes it very hard to debug
 stupid zip of github means cant make dynamic git updates during pipeline
 codepipeline doesnt go to next stage when lambda is finished, api call has to be made
 shit integration with github. Surely should have pull requests within codedeploy
+aws seems to be basing the deployments not based on git branch but on testing. But how do you then review code? this seems shit 
