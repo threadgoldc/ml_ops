@@ -225,7 +225,7 @@ Resources:
                 Version: 1
                 Provider: CloudFormation
               OutputArtifacts:
-                - Name: DeployStack
+                - Name: DeployStackProd
               Configuration:
                 ActionMode: CREATE_UPDATE
                 RoleArn:
