@@ -3,7 +3,7 @@ GITHUB_TOKEN=${TOKEN//[^[:alnum:]]/}
 
 export GITHUB_TOKEN=$GITHUB_TOKEN
 
-hub clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git
+git clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git
 
 cd ml_ops
 

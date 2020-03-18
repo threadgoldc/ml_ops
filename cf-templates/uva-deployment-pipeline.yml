@@ -166,6 +166,8 @@ Resources:
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
 
+        # run tests here
+
         - Name: DeleteDev
           Actions:
             - Name: DeleteDev
