@@ -1,6 +1,8 @@
+COMMIT_MESSAGE=$1
+
 git add .
 
-git commit -m 'testing feature'
+git commit -m $COMMIT_MESSAGE
 
 git push
 
@@ -23,6 +25,4 @@ python ./scripts/run-dev-deployment.py $GIT_BRANCH
     --capabilities CAPABILITY_NAMED_IAM
 }
 
-sleep 30
-
-aws codepipeline start-pipeline-execution --name uva-dev-pipeline
+python ./scripts/dev-pipeline-run.py
