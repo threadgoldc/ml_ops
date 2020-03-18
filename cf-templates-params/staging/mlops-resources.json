@@ -1,1 +1,1 @@
-{"Parameters": {"GitBranchName": "staging", "LambdaVersion": "test", "Prefix": "staging"}}
+{"Parameters": {"Prefix": "staging"}}
