@@ -14,6 +14,14 @@ Resources:
         VersioningConfiguration:
             Status: Enabled
 
+  LambdaDeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub uva-s3-dev-lambda-deployment
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
