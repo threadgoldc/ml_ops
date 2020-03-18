@@ -70,7 +70,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref PipelineBucket
         Type: S3
-      Name: !Sub uva-dev-pipeline-yeet
+      Name: !Sub uva-dev-pipeline
       RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
