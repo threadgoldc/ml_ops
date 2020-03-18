@@ -17,7 +17,7 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub iam-dev-codebuild
+      RoleName: !Sub iam-dev-codebuild-yeet
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
