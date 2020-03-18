@@ -4,7 +4,7 @@ git add .
 
 git commit -m $COMMIT_MESSAGE
 
-git push
+git push --set-upstream origin feature-pipeline-cleanup
 
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
