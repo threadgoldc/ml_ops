@@ -113,7 +113,7 @@ Resources:
                 TemplateConfiguration: 
                   Parameters:
                     GitBranchName: !Sub ${GitBranchName}
-                    Prefix: !Sub ${dev}
+                    Prefix: dev
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 2
 
