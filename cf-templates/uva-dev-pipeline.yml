@@ -110,7 +110,10 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: dev-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
+                TemplateConfiguration: 
+                  Parameters:
+                    GitBranchName: !Sub ${GitBranchName}
+                    Prefix: !Sub ${dev}
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 2
 
