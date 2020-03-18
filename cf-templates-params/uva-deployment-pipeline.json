@@ -1,6 +1,6 @@
 [
     {
       "ParameterKey": "GitBranchName",
-      "ParameterValue": "feature-add-dev-prod"
+      "ParameterValue": "dev"
     }
 ]
