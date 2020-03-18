@@ -109,7 +109,7 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: dev-mlops-resources
-                TemplateConfiguration: '{"Parameters": {"Prefix": "dev"}}'
+                TemplateConfiguration: Source::cf-templates-params/dev/mlops-resources.yml
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 2
 
