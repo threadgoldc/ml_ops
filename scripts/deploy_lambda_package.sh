@@ -11,7 +11,7 @@ do
     zip -r9 ./function.zip .
     zip -g function.zip function.py
 
-    aws s3 cp function.zip s3://uva-s3-lambda-deployment/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
+    aws s3 cp function.zip s3://$S3_BUCKET_NAME/$LAMBDA_NAME/$CODEBUILD_BUILD_ID.zip
 
     rm -rf venv
     rm function.zip

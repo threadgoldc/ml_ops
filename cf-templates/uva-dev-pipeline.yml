@@ -17,7 +17,7 @@ Resources:
   LambdaDeploymentBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub uva-s3-dev-lambda-deployment
+      BucketName: uva-s3-dev-lambda-deployment
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -67,6 +67,10 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+        EnvironmentVariables:
+          - Name: S3_BUCKET_NAME
+            Value: uva-s3-dev-lambda-deployment
+            Type: PLAINTEXT
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
