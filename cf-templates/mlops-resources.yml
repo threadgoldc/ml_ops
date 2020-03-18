@@ -109,7 +109,7 @@ Resources:
                                                                 }
                                                             )
             
-                print('donzos')
+                print('donzos!')
         Handler: index.lambda_handler
         Role: 
           Fn::GetAtt:
