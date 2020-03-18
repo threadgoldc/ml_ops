@@ -1,1 +1,1 @@
-{"Parameters": {"Prefix": "dev"}}
+{"Parameters": {"Prefix": "dev", "GitBranchName": "feature-sagemaker-pipeline"}}

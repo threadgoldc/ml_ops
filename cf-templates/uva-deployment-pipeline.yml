@@ -14,14 +14,6 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
 
-  LambdaDeploymentBucket:
-    Type: AWS::S3::Bucket
-    Properties: 
-      BucketName: !Sub uva-s3-lambda-deployment
-      AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
-
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -126,23 +118,6 @@ Resources:
                 - Name: Source
               RunOrder: 1
 
-        - Name: BuildArtifacts
-          Actions:
-            - Name: BuildImage
-              InputArtifacts:
-                - Name: Source
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                  ProjectName:
-                    Ref: ArtifactCodeBuildProject
-              OutputArtifacts:
-                - Name: CFParameters
-              RunOrder: 2
-
         - Name: DeployStaging
           Actions:
             - Name: DeployStaging
@@ -162,9 +137,9 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: staging-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/staging/mlops-resources.json
+                TemplateConfiguration: Source::cf-templates-params/staging/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
-              RunOrder: 3
+              RunOrder: 2
 
         # run tests here
 
@@ -185,7 +160,7 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: staging-mlops-resources
-              RunOrder: 4
+              RunOrder: 3
 
         - Name: MergeToProdApproval
           Actions:
@@ -198,7 +173,7 @@ Resources:
                 Provider: Manual
               Configuration:
                   CustomData: 'Do you want to commit this change to Prod?'
-              RunOrder: 5
+              RunOrder: 4
 
         - Name: BuildGitProdPush
           Actions:
@@ -213,7 +188,7 @@ Resources:
               Configuration:
                   ProjectName:
                     Ref: MRPushGitCodeBuildProject
-              RunOrder: 6
+              RunOrder: 5
 
         - Name: DeployProd
           Actions:
@@ -234,9 +209,9 @@ Resources:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: prod-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/prod/mlops-resources.json
+                TemplateConfiguration: Source::cf-templates-params/prod/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
-              RunOrder: 7
+              RunOrder: 6
 
 Outputs:
   GitBranchNameOutput:
