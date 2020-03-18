@@ -1,5 +1,9 @@
 import boto3 
 
+def execute_pipeline():
+    cp_client = boto3.client('cloudformation')
+    cp_client.start_pipeline_execution(name='uva-dev-pipeline')
+
 def wait_run_pipeline():
     client = boto3.client('cloudformation')
 
@@ -12,11 +16,11 @@ def wait_run_pipeline():
     elif status == 'UPDATE_IN_PROGRESS':
         waiter = client.get_waiter('stack_update_complete') 
         waiter.wait(StackName='uva-dev-pipeline')  
-        cp_client = boto3.client('cloudformation')
-        cp_client.start_pipeline_execution(name='uva-dev-pipeline')
-    
+        execute_pipeline()
+
     else:
         print('state is %s' % status)
+        execute_pipeline()
 
 if __name__ == '__main__':
     wait_run_pipeline()
