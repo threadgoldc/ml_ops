@@ -1,17 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  GitBranchName:
-    Type: String
-    Default: dev
 
   Prefix:
     Type: String
     Default: dev
-
-  LambdaVersion:
-    Description: git hash of lambda verisons to be deployed
-    Type: String
 
 Resources:
     MLArtifactStore:
