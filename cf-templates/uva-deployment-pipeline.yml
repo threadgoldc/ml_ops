@@ -123,7 +123,6 @@ Resources:
             - Name: DeployStaging
               InputArtifacts:
                 - Name: Source
-                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -148,7 +147,6 @@ Resources:
             - Name: DeleteStaging
               InputArtifacts:
                 - Name: Source
-                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -195,7 +193,6 @@ Resources:
             - Name: DeployProd
               InputArtifacts:
                 - Name: Source
-                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
