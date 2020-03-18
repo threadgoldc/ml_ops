@@ -22,3 +22,7 @@ python ./scripts/run-dev-deployment.py $GIT_BRANCH
     --parameters file://cf-templates-params/uva-dev-pipeline.json \
     --capabilities CAPABILITY_NAMED_IAM
 }
+
+sleep 30
+
+aws codepipeline start-pipeline-execution --name uva-dev-pipeline
