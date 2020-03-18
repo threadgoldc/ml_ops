@@ -92,7 +92,6 @@ Resources:
             def lambda_handler(event, context):
                 import boto3
             
-            
                 codepipeline = boto3.client('codepipeline')
                 jobId = event["CodePipeline.job"]["id"]
             
@@ -111,7 +110,7 @@ Resources:
                                                             )
             
                 print('donzos')
-        Handler: function.lambda_handler
+        Handler: index.lambda_handler
         Role: 
           Fn::GetAtt:
             - CheckModelLambdaRole
@@ -150,7 +149,7 @@ Resources:
                                                             )
             
                 print('donzos')
-        Handler: function.lambda_handler
+        Handler: index.lambda_handler
         Role: 
           Fn::GetAtt:
             - CheckModelLambdaRole
