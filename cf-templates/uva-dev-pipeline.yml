@@ -96,7 +96,6 @@ Resources:
             - Name: DeployDevAction
               InputArtifacts:
                 - Name: Source
-                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
