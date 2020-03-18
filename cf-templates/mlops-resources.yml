@@ -92,9 +92,32 @@ Resources:
         FunctionName: !Sub ${Prefix}-lambda-check-model
         Description: A test lambda
         Runtime: python3.7
-        Code:
-          S3Bucket: !Sub uva-s3-lambda-deployment
-          S3Key: !Sub check-model/${LambdaVersion}.zip
+        Code: 
+          ZipFile: !Sub |
+            import json
+
+            def lambda_handler(event, context):
+                import boto3
+            
+            
+                codepipeline = boto3.client('codepipeline')
+                jobId = event["CodePipeline.job"]["id"]
+            
+                try:
+                
+                    codepipeline.put_job_success_result(jobId=jobId)
+            
+                except Exception as e:
+                    print(e)
+                    resp = codepipeline.put_job_failure_result(jobId=jobId,
+                                                                failureDetails={
+                                                                    'type': 'ConfigurationError',
+                                                                    'message': str(e),
+                                                                    'externalExecutionId': context.aws_request_id
+                                                                }
+                                                            )
+            
+                print('donzos')
         Handler: function.lambda_handler
         Role: 
           Fn::GetAtt:
@@ -108,9 +131,32 @@ Resources:
         FunctionName: !Sub ${Prefix}-lambda-train-model
         Description: A test lambda
         Runtime: python3.7
-        Code:
-          S3Bucket: !Sub uva-s3-lambda-deployment
-          S3Key: !Sub train-model/${LambdaVersion}.zip
+        Code: 
+          ZipFile: !Sub |
+            import json
+
+            def lambda_handler(event, context):
+                import boto3
+            
+            
+                codepipeline = boto3.client('codepipeline')
+                jobId = event["CodePipeline.job"]["id"]
+            
+                try:
+                
+                    codepipeline.put_job_success_result(jobId=jobId)
+            
+                except Exception as e:
+                    print(e)
+                    resp = codepipeline.put_job_failure_result(jobId=jobId,
+                                                                failureDetails={
+                                                                    'type': 'ConfigurationError',
+                                                                    'message': str(e),
+                                                                    'externalExecutionId': context.aws_request_id
+                                                                }
+                                                            )
+            
+                print('donzos')
         Handler: function.lambda_handler
         Role: 
           Fn::GetAtt:

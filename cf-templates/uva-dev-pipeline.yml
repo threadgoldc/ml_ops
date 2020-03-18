@@ -14,14 +14,6 @@ Resources:
         VersioningConfiguration:
             Status: Enabled
 
-  LambdaDeploymentBucket:
-    Type: AWS::S3::Bucket
-    Properties: 
-      BucketName: uva-s3-dev-lambda-deployment
-      AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
-
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -99,23 +91,6 @@ Resources:
                 - Name: Source
               RunOrder: 1
 
-        - Name: BuildArtifacts
-          Actions:
-            - Name: BuildImage
-              InputArtifacts:
-                - Name: Source
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                  ProjectName:
-                    Ref: ArtifactCodeBuildProject
-              OutputArtifacts:
-                - Name: CFParameters
-              RunOrder: 2
-
         - Name: DeployDev
           Actions:
             - Name: DeployDevAction
@@ -137,7 +112,7 @@ Resources:
                 StackName: dev-mlops-resources
                 TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
-              RunOrder: 3
+              RunOrder: 2
 
 Outputs:
   GitBranchNameOutput:
