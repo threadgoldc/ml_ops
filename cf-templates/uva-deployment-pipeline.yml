@@ -120,7 +120,7 @@ Resources:
                 Owner: "threadgoldc"
                 Repo: "ml_ops"
                 PollForSourceChanges: "false"
-                Branch: "dev"
+                Branch: "staging"
                 OAuthToken: '{{resolve:ssm:github:1}}'
               OutputArtifacts:
                 - Name: Source
