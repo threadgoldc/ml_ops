@@ -11,6 +11,6 @@ git fetch
 
 git checkout prod
 
-git merge origin/dev -m 'merging to prod'
+git merge origin/staging -m 'merging to prod'
 
 git push
