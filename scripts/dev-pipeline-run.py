@@ -1,7 +1,7 @@
 import boto3 
 
 def execute_pipeline():
-    cp_client = boto3.client('cloudformation')
+    cp_client = boto3.client('codepipeline')
     cp_client.start_pipeline_execution(name='uva-dev-pipeline')
 
 def wait_run_pipeline():
