@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  GitBranchName:
+    Type: String
+
+Resources:
+
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+        BucketName: !Sub uva-s3-dev-pipeline-artifact
+        AccessControl: Private
+        VersioningConfiguration:
+            Status: Enabled
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub iam-dev-codebuild
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codepipeline.amazonaws.com"
+                - "codebuild.amazonaws.com"
+                - "codedeploy.amazonaws.com"
+                - "cloudformation.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: /service-role/
+      Policies:
+        -
+          PolicyName: "CodeBuildAccessPolicies"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "*"
+                Resource:
+                  - "*"
+
+  ArtifactCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: uva-codebuild-dev-artifacts
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        BuildSpec: buildspecs/build-artifacts.yml
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore: 
+        Location: !Ref PipelineBucket
+        Type: S3
+      Name: !Sub uva-dev-pipeline
+      RoleArn: !GetAtt CodeBuildServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GithubRepo
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration: 
+                Owner: "threadgoldc"
+                Repo: "ml_ops"
+                PollForSourceChanges: "false"
+                Branch: !Sub ${GitBranchName}
+                OAuthToken: '{{resolve:ssm:github:1}}'
+              OutputArtifacts:
+                - Name: Source
+              RunOrder: 1
+
+        - Name: BuildArtifacts
+          Actions:
+            - Name: BuildImage
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                  ProjectName:
+                    Ref: ArtifactCodeBuildProject
+              OutputArtifacts:
+                - Name: CFParameters
+              RunOrder: 2
+
+        - Name: DeployDev
+          Actions:
+            - Name: DeployDevAction
+              InputArtifacts:
+                - Name: Source
+                - Name: CFParameters
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              OutputArtifacts:
+                - Name: DeployStack
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: dev-mlops-resources
+                TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
+                TemplatePath: Source::cf-templates/mlops-resources.yml
+              RunOrder: 3
+
+Outputs:
+  GitBranchNameOutput:
+    Value: !Sub ${GitBranchName}

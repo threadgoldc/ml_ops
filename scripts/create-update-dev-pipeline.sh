@@ -1,13 +1,3 @@
-git add .
-
-git commit -m 'testing feature'
-
-git push
-
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-python ./scripts/run-dev-deployment.py $GIT_BRANCH
-
 { 
     aws cloudformation create-stack  \
     --stack-name uva-dev-pipeline  \

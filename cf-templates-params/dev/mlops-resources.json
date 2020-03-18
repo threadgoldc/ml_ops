@@ -1,1 +1,1 @@
-{"Parameters": {"GitBranchName": "dev", "LambdaVersion": "test"}}
+{"Parameters": {"GitBranchName": "feature-sagemaker-pipeline", "LambdaVersion": "test"}}

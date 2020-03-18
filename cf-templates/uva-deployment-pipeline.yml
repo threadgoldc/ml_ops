@@ -92,7 +92,7 @@ Resources:
       Filters:
         - 
           JsonPath: "$.ref"
-          MatchEquals: !Sub refs/heads/dev
+          MatchEquals: !Sub refs/heads/staging
       TargetPipeline: !Ref Pipeline
       TargetAction: GithubRepo
       Name: PipelineWebhook
@@ -143,9 +143,9 @@ Resources:
                 - Name: CFParameters
               RunOrder: 2
 
-        - Name: DeployDev
+        - Name: DeployStaging
           Actions:
-            - Name: DeployDev
+            - Name: DeployStaging
               InputArtifacts:
                 - Name: Source
                 - Name: CFParameters
@@ -161,16 +161,16 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: dev-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/dev/mlops-resources.json
+                StackName: staging-mlops-resources
+                TemplateConfiguration: CFParameters::cf-templates-params/staging/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
               RunOrder: 3
 
         # run tests here
 
-        - Name: DeleteDev
+        - Name: DeleteStaging
           Actions:
-            - Name: DeleteDev
+            - Name: DeleteStaging
               InputArtifacts:
                 - Name: Source
                 - Name: CFParameters
@@ -184,7 +184,7 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: dev-mlops-resources
+                StackName: staging-mlops-resources
               RunOrder: 4
 
         - Name: MergeToProdApproval
