@@ -23,6 +23,6 @@ python ./scripts/run-dev-deployment.py $GIT_BRANCH
     --capabilities CAPABILITY_NAMED_IAM
 }
 
-sleep 30
+# sleep 30
 
-aws codepipeline start-pipeline-execution --name uva-dev-pipeline
+# aws codepipeline start-pipeline-execution --name uva-dev-pipeline

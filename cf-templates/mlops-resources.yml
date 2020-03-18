@@ -5,6 +5,10 @@ Parameters:
     Type: String
     Default: dev
 
+  Prefix:
+    Type: String
+    Default: dev
+
   LambdaVersion:
     Description: git hash of lambda verisons to be deployed
     Type: String
@@ -13,7 +17,7 @@ Resources:
     MLArtifactStore:
       Type: AWS::S3::Bucket
       Properties: 
-        BucketName: !Sub ${GitBranchName}-s3-ml-artifact
+        BucketName: !Sub ${Prefix}-s3-ml-artifact
         AccessControl: Private
         VersioningConfiguration:
           Status: Enabled
@@ -21,7 +25,7 @@ Resources:
     MLOpsBucket:
         Type: AWS::S3::Bucket
         Properties: 
-          BucketName: !Sub ${GitBranchName}-s3-ml-dataset
+          BucketName: !Sub ${Prefix}-s3-ml-dataset
           AccessControl: Private
           VersioningConfiguration:
             Status: Enabled
@@ -29,7 +33,7 @@ Resources:
     CheckModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${GitBranchName}-iam-check-model-role
+        RoleName: !Sub ${Prefix}-iam-check-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -57,7 +61,7 @@ Resources:
     TrainModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${GitBranchName}-iam-train-model-role
+        RoleName: !Sub ${Prefix}-iam-train-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -85,7 +89,7 @@ Resources:
     CheckModelLambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${GitBranchName}-lambda-check-model
+        FunctionName: !Sub ${Prefix}-lambda-check-model
         Description: A test lambda
         Runtime: python3.7
         Code:
@@ -101,7 +105,7 @@ Resources:
     TrainModelLambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
-        FunctionName: !Sub ${GitBranchName}-lambda-train-model
+        FunctionName: !Sub ${Prefix}-lambda-train-model
         Description: A test lambda
         Runtime: python3.7
         Code:
@@ -117,7 +121,7 @@ Resources:
     MLOpsPipelineRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${GitBranchName}-iam-pipeline
+        RoleName: !Sub ${Prefix}-iam-pipeline
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -149,7 +153,7 @@ Resources:
     DeployPipeline:
       Type: "AWS::CodePipeline::Pipeline"
       Properties:
-        Name: !Sub ${GitBranchName}-mlops-pipeline
+        Name: !Sub ${Prefix}-mlops-pipeline
         RoleArn: !GetAtt MLOpsPipelineRole.Arn
         ArtifactStore:
             Type: S3
