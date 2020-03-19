@@ -12,7 +12,7 @@ def wait_run_pipeline():
     if status == 'CREATE_IN_PROGRESS':
         print('creating and running pipeline')
 
-    if status == 'UPDATE_IN_PROGRESS':
+    elif status == 'UPDATE_IN_PROGRESS':
         waiter = client.get_waiter('stack_update_complete') 
         waiter.wait(StackName='uva-dev-pipeline')  
         execute_pipeline()
