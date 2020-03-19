@@ -1,4 +1,2 @@
 {"Parameters": {"Prefix": "dev", 
-    "ImageRepoName": "test",
-    "ModelName": "test",
-    "DatasetKeyPath": "test"}}
+    "ModelName": "a-model"}}
