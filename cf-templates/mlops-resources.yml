@@ -10,10 +10,6 @@ Parameters:
     Type: String
     Description: Name of the ECR repo without the image name
 
-  ImageTagName:
-    Type: String
-    Description: Name of the ECR image tag
-
   ModelName:
     Type: String
     Description: Name of the model
@@ -217,8 +213,8 @@ Resources:
                     
                     params_deploy = {
                         "Parameters": {
-                            "ImageRepoName": "${ImageRepoName}",
-                            "ImageTagName": "${ImageTagName}",
+                            "ImageRepoName": "${Prefix}-ecr-repo",
+                            "ImageTagName": "latest",
                             "ModelName": "${ModelName}",
                             "TrainJobId": executionId
                         }
