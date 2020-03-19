@@ -32,16 +32,17 @@ Resources:
           Status: Enabled
 
     MLOpsBucket:
-        Type: AWS::S3::Bucket
-        Properties: 
-          BucketName: !Sub ${Prefix}-s3-ml-dataset
-          AccessControl: Private
-          VersioningConfiguration:
-            Status: Enabled
+      Type: AWS::S3::Bucket
+      Properties: 
+        BucketName: !Sub ${Prefix}-s3-ml-dataset
+        AccessControl: Private
+        VersioningConfiguration:
+          Status: Enabled
 
-    Type: AWS::ECR::Repository
-    Properties: 
-      RepositoryName: ${Prefix}-ecr-repo
+    MLECR:
+      Type: AWS::ECR::Repository
+      Properties: 
+        RepositoryName: ${Prefix}-ecr-repo
 
     CheckModelLambdaRole:
       Type: AWS::IAM::Role
