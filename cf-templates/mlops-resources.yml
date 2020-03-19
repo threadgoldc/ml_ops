@@ -39,6 +39,10 @@ Resources:
           VersioningConfiguration:
             Status: Enabled
 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: ${Prefix}-ecr-repo
+
     CheckModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
