@@ -6,6 +6,22 @@ Parameters:
     Type: String
     Default: dev
 
+  ImageRepoName:
+    Type: String
+    Description: Name of the ECR repo without the image name
+
+  ImageTagName:
+    Type: String
+    Description: Name of the ECR image tag
+
+  ModelName:
+    Type: String
+    Description: Name of the model
+    
+  DatasetKeyPath:
+    Type: String
+    Description: Path of the S3 bucket that CodePipeline should find a sagemaker jobfile
+
 Resources:
     MLArtifactStore:
       Type: AWS::S3::Bucket
@@ -303,6 +319,23 @@ Resources:
                   S3Bucket: !Ref MLOpsBucket
                   S3ObjectKey: temp.yml
                 RunOrder: 1
+          - 
+            Name: Build
+            Actions:
+              - Name: BuildImage
+                InputArtifacts:
+                  - Name: Source
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Version: 1
+                  Provider: CodeBuild
+                Configuration:
+                    ProjectName:
+                      Ref: CodeBuildProject
+                OutputArtifacts:
+                  - Name: GitCodebase
+                RunOrder: 2
           -
             Name: TrainModel
             Actions:
@@ -320,7 +353,7 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref CheckModelLambdaFunction
-                RunOrder: 2
+                RunOrder: 3
           - 
             Name: TrainApproval
             Actions:
@@ -333,7 +366,7 @@ Resources:
                   Provider: Manual
                 Configuration:
                     CustomData: 'Was this model trained successfully?'
-                RunOrder: 3
+                RunOrder: 4
           -
             Name: CheckModel
             Actions:
@@ -351,7 +384,7 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref TrainModelLambdaFunction
-                RunOrder: 4
+                RunOrder: 5
 
       DependsOn: 
         - CheckModelLambdaFunction 

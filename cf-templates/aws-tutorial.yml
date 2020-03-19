@@ -16,7 +16,6 @@ Parameters:
     Type: String
     Description: Path of the S3 bucket that CodePipeline should find a sagemaker jobfile
 
-
 Resources:
   
   MLOpsLaunchJob:

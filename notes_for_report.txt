@@ -11,3 +11,4 @@ automatic deployment puts way too much trust in automated tested - no flexibilit
 seems to say only use one checkout but then you need to change the name
 https://github.com/aws-samples/codepipeline-nested-cfn
 tbf is quite good for severless deployment 
+this is just fucking shit. AWS are arseholes. WHY DOES THE CF SCRIPT HAVE TO BE IN S3?! twats. so it isnt kept in codecommit as it needs to be in s3 and obviously you cant have more than one source for a pipeline. just use jenkins smh
