@@ -121,7 +121,7 @@ Resources:
                   raise(Exception("Action token wasn't found. Aborting..."))
                     
                 response = sagemaker.describe_training_job( 
-                  TrainingJobName='mlops-${model}-%s' % executionId )
+                  TrainingJobName='mlops-model-%s' % executionId )
                 
                 status = response['TrainingJobStatus']
                 print(status)
@@ -152,7 +152,7 @@ Resources:
                 token=token
               )
               # disable monitoring event
-              cloudwatch_events.disable_rule( Name='mlops-job-monitor-${model}')
+              cloudwatch_events.disable_rule( Name='mlops-job-monitor-model')
               
               return "Done"
         Handler: index.lambda_handler
@@ -201,9 +201,7 @@ Resources:
                     
                     params_deploy = {
                         "Parameters": {
-                            "ImageRepoName": "${Prefix}-ecr-repo",
-                            "ImageTagName": "latest",
-                            "model": "${model}",
+                            "Prefix": "${Prefix}",
                             "TrainJobId": executionId
                         }
                     }
@@ -222,13 +220,13 @@ Resources:
                         raise(Exception("trainingjob.json wasn't found"))
                     
                     # launch training job
-                    trainingJob['TrainingJobName'] = 'mlops-${model}-%s' % executionId
+                    trainingJob['TrainingJobName'] = 'mlops-model-%s' % executionId
                     trainingJob['Tags'].append({'Key': 'jobid', 'Value': jobId})
                     print(trainingJob)
                     sagemaker.create_training_job(**trainingJob)
                     
                     # enable monitoring event
-                    cloudwatch_events.enable_rule( Name='mlops-job-monitor-${model}')
+                    cloudwatch_events.enable_rule( Name='mlops-job-monitor-model')
   
                     # and update codepipeline
                     codepipeline.put_job_success_result(jobId=jobId)
@@ -308,23 +306,6 @@ Resources:
                   S3Bucket: !Ref MLOpsBucket
                   S3ObjectKey: temp.yml
                 RunOrder: 1
-          - 
-            Name: Build
-            Actions:
-              - Name: BuildImage
-                InputArtifacts:
-                  - Name: Source
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Version: 1
-                  Provider: CodeBuild
-                Configuration:
-                    ProjectName:
-                      Ref: CodeBuildProject
-                OutputArtifacts:
-                  - Name: GitCodebase
-                RunOrder: 2
           -
             Name: TrainModel
             Actions:
@@ -342,7 +323,7 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref CheckModelLambdaFunction
-                RunOrder: 3
+                RunOrder: 2
           - 
             Name: TrainApproval
             Actions:
@@ -355,7 +336,7 @@ Resources:
                   Provider: Manual
                 Configuration:
                     CustomData: 'Was this model trained successfully?'
-                RunOrder: 4
+                RunOrder: 3
           -
             Name: CheckModel
             Actions:
@@ -373,7 +354,30 @@ Resources:
                   Provider: Lambda
                 Configuration:
                     FunctionName: !Ref TrainModelLambdaFunction
-                RunOrder: 5
+                RunOrder: 4
+          -
+            Name: DeployDev
+            Actions:
+              - 
+                Name: DeployModelDev
+                InputArtifacts:
+                  - Name: ModelSourceOutput
+                  - Name: ModelTrainOutput
+                OutputArtifacts:
+                  - Name: ModelDeployDevOutput
+                ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Version: 1
+                  Provider: CloudFormation
+                Configuration:
+                  ActionMode: CREATE_UPDATE
+                  RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/MLOps
+                  Capabilities: CAPABILITY_NAMED_IAM
+                  StackName: !Sub ${AWS::StackName}-deploy-dev
+                  TemplateConfiguration: ModelTrainOutput::assets/deploy-model.json
+                  TemplatePath: ModelSourceOutput::assets/deploy-model-dev.yml
+                RunOrder: 1
 
       DependsOn: 
         - CheckModelLambdaFunction 
