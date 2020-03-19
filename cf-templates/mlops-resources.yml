@@ -87,29 +87,69 @@ Resources:
         Runtime: python3.7
         Code: 
           ZipFile: !Sub |
-            import json
-
+            import boto3
+  
+            sagemaker = boto3.client('sagemaker')
+            cloudwatch_events = boto3.client('events')
+            codepipeline = boto3.client('codepipeline')
+  
             def lambda_handler(event, context):
-                import boto3
-            
-                codepipeline = boto3.client('codepipeline')
-                jobId = event["CodePipeline.job"]["id"]
-            
-                try:
+              pipeline_name = '${AWS::StackName}'
+              result = None
+              token = None
+  
+              try:
+                response = codepipeline.get_pipeline_state( name=pipeline_name )
+                executionId = response['stageStates'][0]['latestExecution']['pipelineExecutionId']
                 
-                    codepipeline.put_job_success_result(jobId=jobId)
-            
-                except Exception as e:
-                    print(e)
-                    resp = codepipeline.put_job_failure_result(jobId=jobId,
-                                                                failureDetails={
-                                                                    'type': 'ConfigurationError',
-                                                                    'message': str(e),
-                                                                    'externalExecutionId': context.aws_request_id
-                                                                }
-                                                            )
-            
-                print('donzos!')
+                # Get the approve train status token
+                for stageState in response['stageStates']:
+                  if stageState['stageName'] == 'TrainApproval':
+                    for actionState in stageState['actionStates']:
+                      if actionState['actionName'] == 'ApproveTrain':
+                        latestExecution = actionState['latestExecution']
+                        if latestExecution['status'] != 'InProgress':
+                          raise(Exception("Train approval is not awaiting for approval: %s" % latestExecution['status']))
+                        token = latestExecution['token']
+  
+                if token is None:
+                  raise(Exception("Action token wasn't found. Aborting..."))
+                    
+                response = sagemaker.describe_training_job( 
+                  TrainingJobName='mlops-${ModelName}-%s' % executionId )
+                
+                status = response['TrainingJobStatus']
+                print(status)
+                
+                if status == "Completed":
+                  result={
+                    'summary': 'Model trained successfully',
+                    'status': 'Approved'
+                  }
+                elif status == "InProgress":
+                  return "Training (%s) in progress" % executionId
+                else:
+                  result={
+                    'summary': response['FailureReason'],
+                    'status': 'Rejected'
+                  }
+              except Exception as e:
+                result={
+                  'summary': str(e),
+                  'status': 'Rejected'
+                }
+              
+              codepipeline.put_approval_result(
+                pipelineName=pipeline_name,
+                stageName='TrainApproval',
+                actionName='ApproveTrain',
+                result=result,
+                token=token
+              )
+              # disable monitoring event
+              cloudwatch_events.disable_rule( Name='mlops-job-monitor-${ModelName}')
+              
+              return "Done"
         Handler: index.lambda_handler
         Role: 
           Fn::GetAtt:
@@ -125,30 +165,79 @@ Resources:
         Runtime: python3.7
         Code: 
           ZipFile: !Sub |
+            import boto3
+            import io
+            import zipfile
             import json
-
+  
+            s3 = boto3.client('s3')
+            sagemaker = boto3.client('sagemaker')
+            cloudwatch_events = boto3.client('events')
+            codepipeline = boto3.client('codepipeline')
+  
             def lambda_handler(event, context):
-                import boto3
-            
-            
-                codepipeline = boto3.client('codepipeline')
-                jobId = event["CodePipeline.job"]["id"]
-            
-                try:
+                pipeline_name='${AWS::StackName}'
                 
+                jobId = event["CodePipeline.job"]["id"]
+                accountId = event["CodePipeline.job"]["accountId"]
+                trainingJob = None
+                try:
+                    response = codepipeline.get_pipeline_state( name=pipeline_name )
+                    executionId = response['stageStates'][0]['latestExecution']['pipelineExecutionId']
+                    
+                    print('Start training job for jobid[%s] executionId[%s]' % (jobId, executionId))
+                    
+                    for inputArtifacts in event["CodePipeline.job"]["data"]["inputArtifacts"]:
+                        if inputArtifacts['name'] == 'ModelSourceOutput':
+                            s3Location = inputArtifacts['location']['s3Location']
+                            zip_bytes = s3.get_object(Bucket=s3Location['bucketName'], Key=s3Location['objectKey'])['Body'].read()
+                            with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as z:
+                                trainingJob = json.loads(z.read('trainingjob.json').decode('ascii'))
+                    
+                    params_deploy = {
+                        "Parameters": {
+                            "ImageRepoName": "${ImageRepoName}",
+                            "ImageTagName": "${ImageTagName}",
+                            "ModelName": "${ModelName}",
+                            "TrainJobId": executionId
+                        }
+                    }
+                    for outputArtifacts in event["CodePipeline.job"]["data"]["outputArtifacts"]:
+                        if outputArtifacts['name'] == 'ModelTrainOutput':
+                            s3Location = outputArtifacts['location']['s3Location']
+                            
+                            zip_bytes = io.BytesIO()
+                            with zipfile.ZipFile(zip_bytes, "w") as z:
+                                z.writestr('assets/deploy-model.json', json.dumps(params_deploy))
+                              
+                            zip_bytes.seek(0)
+                            s3.put_object(Bucket=s3Location['bucketName'], Key=s3Location['objectKey'], Body=zip_bytes.read())
+                
+                    if trainingJob is None:
+                        raise(Exception("trainingjob.json wasn't found"))
+                    
+                    # launch training job
+                    trainingJob['TrainingJobName'] = 'mlops-${ModelName}-%s' % executionId
+                    trainingJob['Tags'].append({'Key': 'jobid', 'Value': jobId})
+                    print(trainingJob)
+                    sagemaker.create_training_job(**trainingJob)
+                    
+                    # enable monitoring event
+                    cloudwatch_events.enable_rule( Name='mlops-job-monitor-${ModelName}')
+  
+                    # and update codepipeline
                     codepipeline.put_job_success_result(jobId=jobId)
-            
                 except Exception as e:
                     print(e)
-                    resp = codepipeline.put_job_failure_result(jobId=jobId,
-                                                                failureDetails={
-                                                                    'type': 'ConfigurationError',
-                                                                    'message': str(e),
-                                                                    'externalExecutionId': context.aws_request_id
-                                                                }
-                                                            )
-            
-                print('donzos!')
+                    resp = codepipeline.put_job_failure_result(
+                        jobId=jobId,
+                        failureDetails={
+                            'type': 'ConfigurationError',
+                            'message': str(e),
+                            'externalExecutionId': context.aws_request_id
+                        }
+                    )
+                return 'Done'
         Handler: index.lambda_handler
         Role: 
           Fn::GetAtt:
@@ -263,6 +352,7 @@ Resources:
                 Configuration:
                     FunctionName: !Ref TrainModelLambdaFunction
                 RunOrder: 4
+
       DependsOn: 
         - CheckModelLambdaFunction 
         - TrainModelLambdaFunction
