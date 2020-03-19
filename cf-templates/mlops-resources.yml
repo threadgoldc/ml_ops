@@ -17,7 +17,7 @@ Parameters:
   ModelName:
     Type: String
     Description: Name of the model
-    
+
   DatasetKeyPath:
     Type: String
     Description: Path of the S3 bucket that CodePipeline should find a sagemaker jobfile
@@ -319,23 +319,23 @@ Resources:
                   S3Bucket: !Ref MLOpsBucket
                   S3ObjectKey: temp.yml
                 RunOrder: 1
-          - 
-            Name: Build
-            Actions:
-              - Name: BuildImage
-                InputArtifacts:
-                  - Name: Source
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Version: 1
-                  Provider: CodeBuild
-                Configuration:
-                    ProjectName:
-                      Ref: CodeBuildProject
-                OutputArtifacts:
-                  - Name: GitCodebase
-                RunOrder: 2
+          # - 
+          #   Name: Build
+          #   Actions:
+          #     - Name: BuildImage
+          #       InputArtifacts:
+          #         - Name: Source
+          #       ActionTypeId:
+          #         Category: Build
+          #         Owner: AWS
+          #         Version: 1
+          #         Provider: CodeBuild
+          #       Configuration:
+          #           ProjectName:
+          #             Ref: CodeBuildProject
+          #       OutputArtifacts:
+          #         - Name: GitCodebase
+          #       RunOrder: 2
           -
             Name: TrainModel
             Actions:
