@@ -1,12 +1,12 @@
 COMMIT_MESSAGE=$1
 
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
 git add .
 
 git commit -m $COMMIT_MESSAGE
 
-git push --set-upstream origin feature-pipeline-cleanup
-
-GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git push --set-upstream origin $GIT_BRANCH
 
 python ./scripts/run-dev-deployment.py $GIT_BRANCH
 
