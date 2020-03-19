@@ -6,10 +6,6 @@ Parameters:
     Type: String
     Default: dev
 
-  ModelName:
-    Type: String
-    Description: Name of the model
-
 Resources:
     MLArtifactStore:
       Type: AWS::S3::Bucket
@@ -125,7 +121,7 @@ Resources:
                   raise(Exception("Action token wasn't found. Aborting..."))
                     
                 response = sagemaker.describe_training_job( 
-                  TrainingJobName='mlops-${ModelName}-%s' % executionId )
+                  TrainingJobName='mlops-${model}-%s' % executionId )
                 
                 status = response['TrainingJobStatus']
                 print(status)
@@ -156,7 +152,7 @@ Resources:
                 token=token
               )
               # disable monitoring event
-              cloudwatch_events.disable_rule( Name='mlops-job-monitor-${ModelName}')
+              cloudwatch_events.disable_rule( Name='mlops-job-monitor-${model}')
               
               return "Done"
         Handler: index.lambda_handler
@@ -207,7 +203,7 @@ Resources:
                         "Parameters": {
                             "ImageRepoName": "${Prefix}-ecr-repo",
                             "ImageTagName": "latest",
-                            "ModelName": "${ModelName}",
+                            "model": "${model}",
                             "TrainJobId": executionId
                         }
                     }
@@ -226,13 +222,13 @@ Resources:
                         raise(Exception("trainingjob.json wasn't found"))
                     
                     # launch training job
-                    trainingJob['TrainingJobName'] = 'mlops-${ModelName}-%s' % executionId
+                    trainingJob['TrainingJobName'] = 'mlops-${model}-%s' % executionId
                     trainingJob['Tags'].append({'Key': 'jobid', 'Value': jobId})
                     print(trainingJob)
                     sagemaker.create_training_job(**trainingJob)
                     
                     # enable monitoring event
-                    cloudwatch_events.enable_rule( Name='mlops-job-monitor-${ModelName}')
+                    cloudwatch_events.enable_rule( Name='mlops-job-monitor-${model}')
   
                     # and update codepipeline
                     codepipeline.put_job_success_result(jobId=jobId)
