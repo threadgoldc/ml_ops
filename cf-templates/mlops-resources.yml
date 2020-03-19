@@ -42,7 +42,7 @@ Resources:
     MLECR:
       Type: AWS::ECR::Repository
       Properties: 
-        RepositoryName: ${Prefix}-ecr-repo
+        RepositoryName: !Sub ${Prefix}-ecr-repo
 
     CheckModelLambdaRole:
       Type: AWS::IAM::Role
