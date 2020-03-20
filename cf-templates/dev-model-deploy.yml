@@ -29,7 +29,7 @@ Resources:
       - InitialInstanceCount: 1
         InitialVariantWeight: 1.0
         InstanceType: ml.t2.medium 
-        model: !GetAtt Model.model
+        Model: !GetAtt Model.model
         VariantName: !GetAtt Model.model
           
       EndpointConfigName: !Sub mlops-ec-model-dev-${TrainJobId}
