@@ -47,23 +47,32 @@ Resources:
         - Content: !Base64 |
             #!/bin/bash
 
-            git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlop_example
+            git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlops_example
 
-            # Uncomment below to install with fastai
-            # set -e
+            #!/bin/bash
+            set -e
 
-            # OVERVIEW
-            # This script installs a single conda package in a single SageMaker conda environments.
+            echo "Creating fast.ai conda enviornment"
+            cat > /home/ec2-user/fastai-setup.sh << EOF
+            #!/bin/bash
+            cd /home/ec2-user/SageMaker/fastai
+            conda env update
+            PYTHON="3.6"
+            conda create --yes --name mlops python="$PYTHON"
+            echo "Finished creating fast.ai conda environment"
+            EOF
 
-            # sudo -u ec2-user -i <<EOF
+            chown ec2-user:ec2-user /home/ec2-user/fastai-setup.sh
+            chmod 755 /home/ec2-user/fastai-setup.sh
 
-            # PARAMETERS
-            # CHANNEL=fastai
-            # PACKAGE=fastai
+            sudo -i -u ec2-user bash << EOF
+            echo "Creating fast.ai conda env in background process."
+            source activate mlops
+            nohup pip install http://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linux_x86_64.whl &
+            nohup pip install fastai &
+            nohup pip install biopython &
+            nohup pip install networkx &
+            nohup pip install --quiet boto3 &pip install ipykernel
+            python -m ipykernel install --user --name mlops --display-name "conda_fastai"
 
-            # ENVIRONMENT=python3
-
-            # conda install -c "$CHANNEL" "$PACKAGE" --name "$ENVIRONMENT" --yes
-
-            # EOF
-
+            EOF
