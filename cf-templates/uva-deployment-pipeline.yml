@@ -1,0 +1,215 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  GitBranchName:
+    Type: String
+
+Resources:
+
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: !Sub uva-s3-pipeline-artifact
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub iam-codebuild
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "codepipeline.amazonaws.com"
+                - "codebuild.amazonaws.com"
+                - "codedeploy.amazonaws.com"
+                - "cloudformation.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: /service-role/
+      Policies:
+        -
+          PolicyName: "CodeBuildAccessPolicies"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "*"
+                Resource:
+                  - "*"
+
+  ArtifactCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub uva-codebuild-artifacts
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        BuildSpec: buildspecs/build-artifacts.yml
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+
+  MRPushGitCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub uva-codebuild-mr-push-git
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        BuildSpec: buildspecs/build-mr-push-git.yml
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
+
+  AppPipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: '{{resolve:ssm:github:1}}'
+      Filters:
+        - 
+          JsonPath: "$.ref"
+          MatchEquals: !Sub refs/heads/staging
+      TargetPipeline: !Ref Pipeline
+      TargetAction: GithubRepo
+      Name: PipelineWebhook
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      RegisterWithThirdParty: true
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore: 
+        Location: !Ref PipelineBucket
+        Type: S3
+      Name: !Sub uva-deployment-pipeline
+      RoleArn: !GetAtt CodeBuildServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GithubRepo
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration: 
+                Owner: "threadgoldc"
+                Repo: "ml_ops"
+                PollForSourceChanges: "false"
+                Branch: "staging"
+                OAuthToken: '{{resolve:ssm:github:1}}'
+              OutputArtifacts:
+                - Name: Source
+              RunOrder: 1
+
+        - Name: DeployStaging
+          Actions:
+            - Name: DeployStaging
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              OutputArtifacts:
+                - Name: DeployStack
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: staging-mlops-resources
+                TemplateConfiguration: Source::cf-templates-params/staging/mlops-resources.json
+                TemplatePath: Source::cf-templates/mlops-resources.yml
+              RunOrder: 2
+
+        # run tests here
+
+        - Name: DeleteStaging
+          Actions:
+            - Name: DeleteStaging
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                ActionMode: DELETE_ONLY
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: staging-mlops-resources
+              RunOrder: 3
+
+        - Name: MergeToProdApproval
+          Actions:
+            -
+              Name: MRToProdApprovalAction
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                  CustomData: 'Do you want to commit this change to Prod?'
+              RunOrder: 4
+
+        - Name: BuildGitProdPush
+          Actions:
+            - Name: BuildImage
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                  ProjectName:
+                    Ref: MRPushGitCodeBuildProject
+              RunOrder: 5
+
+        - Name: DeployProd
+          Actions:
+            - Name: DeployProd
+              InputArtifacts:
+                - Name: Source
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              OutputArtifacts:
+                - Name: DeployStackProd
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn:
+                  Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: prod-mlops-resources
+                TemplateConfiguration: Source::cf-templates-params/prod/mlops-resources.json
+                TemplatePath: Source::cf-templates/mlops-resources.yml
+              RunOrder: 6
+
+Outputs:
+  GitBranchNameOutput:
+    Value: !Sub ${GitBranchName}

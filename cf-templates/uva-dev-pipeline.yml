@@ -1,35 +1,23 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Username:
-    Type: String
-
   GitBranchName:
     Type: String
-    Default: prod
 
 Resources:
 
   PipelineBucket:
     Type: AWS::S3::Bucket
     Properties: 
-      BucketName: !Sub ${Username}-s3-pipeline-artifact
-      AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
-
-  LambdaDeploymentBucket:
-    Type: AWS::S3::Bucket
-    Properties: 
-      BucketName: !Sub ${Username}-s3-lambda-deployment
-      AccessControl: Private
-      VersioningConfiguration:
-        Status: Enabled
+        BucketName: !Sub uva-s3-dev-pipeline-artifact
+        AccessControl: Private
+        VersioningConfiguration:
+            Status: Enabled
 
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${Username}-iam-codebuild
+      RoleName: !Sub iam-dev-codebuild
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -57,38 +45,24 @@ Resources:
                 Resource:
                   - "*"
 
-  CodeBuildProject:
+  ArtifactCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Username}-codebuild
+      Name: uva-codebuild-dev-artifacts
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Artifacts:
-        Type: no_artifacts
+        Type: CODEPIPELINE
+      Source:
+        BuildSpec: buildspecs/build-artifacts.yml
+        Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:1.0
-      Source:
-        Auth:
-          Type: OAUTH
-        Location: https://github.com/threadgoldc/ml_ops.git
-        Type: GITHUB
-
-  AppPipelineWebhook:
-    Type: AWS::CodePipeline::Webhook
-    Properties:
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: '{{resolve:ssm:github:1}}'
-      Filters:
-        - 
-          JsonPath: "$.ref"
-          MatchEquals: !Sub refs/heads/${GitBranchName}
-      TargetPipeline: !Ref Pipeline
-      TargetAction: GithubRepo
-      Name: PipelineWebhook
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      RegisterWithThirdParty: true
+        EnvironmentVariables:
+          - Name: S3_BUCKET_NAME
+            Value: uva-s3-dev-lambda-deployment
+            Type: PLAINTEXT
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -96,7 +70,7 @@ Resources:
       ArtifactStore: 
         Location: !Ref PipelineBucket
         Type: S3
-      Name: !Sub ${Username}-pipeline
+      Name: !Sub uva-dev-pipeline
       RoleArn: !GetAtt CodeBuildServiceRole.Arn
       Stages:
         - Name: Source
@@ -111,35 +85,17 @@ Resources:
                 Owner: "threadgoldc"
                 Repo: "ml_ops"
                 PollForSourceChanges: "false"
-                Branch: !Sub "${GitBranchName}"
+                Branch: !Sub ${GitBranchName}
                 OAuthToken: '{{resolve:ssm:github:1}}'
               OutputArtifacts:
                 - Name: Source
               RunOrder: 1
 
-        - Name: Build
+        - Name: DeployDev
           Actions:
-            - Name: BuildImage
+            - Name: DeployDevAction
               InputArtifacts:
                 - Name: Source
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                  ProjectName:
-                    Ref: CodeBuildProject
-              OutputArtifacts:
-                - Name: CFParameters
-              RunOrder: 2
-
-        - Name: Deploy
-          Actions:
-            - Name: DeployLambdas
-              InputArtifacts:
-                - Name: Source
-                - Name: CFParameters
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -152,11 +108,11 @@ Resources:
                 RoleArn:
                   Fn::GetAtt: [ CodeBuildServiceRole, Arn ]
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${Username}-mlops-resources
-                TemplateConfiguration: CFParameters::cf-templates-params/mlops-resources.json
+                StackName: dev-mlops-resources
+                TemplateConfiguration: Source::cf-templates-params/dev/mlops-resources.json
                 TemplatePath: Source::cf-templates/mlops-resources.yml
-              RunOrder: 3
+              RunOrder: 2
 
 Outputs:
-  UsernameOutput:
-    Value: !Sub ${Username}
+  GitBranchNameOutput:
+    Value: !Sub ${GitBranchName}

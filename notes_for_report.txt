@@ -2,3 +2,12 @@ cant resolve ssm-secure in cf templates
 lambda deployment is horrible
 abstraction of codepipeline makes it very hard to debug
 stupid zip of github means cant make dynamic git updates during pipeline
+codepipeline doesnt go to next stage when lambda is finished, api call has to be made
+shit integration with github. Surely should have pull requests within codedeploy
+aws seems to be basing the deployments not based on git branch but on testing. But how do you then review code? this seems shit 
+why for cf stack does the template have to be in s3. why. how do you automate this now?
+with so many rapid commits, it makes no sense to have to initialise a codebuild instance every time
+automatic deployment puts way too much trust in automated tested - no flexibility for the way of working
+seems to say only use one checkout but then you need to change the name
+https://github.com/aws-samples/codepipeline-nested-cfn
+tbf is quite good for severless deployment 

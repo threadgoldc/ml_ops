@@ -1,27 +1,32 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  Username:
+
+  Prefix:
     Type: String
     Default: dev
 
-  LambdaVersion:
-    Description: git hash of lambda verisons to be deployed
-    Type: String
-
 Resources:
+    MLArtifactStore:
+      Type: AWS::S3::Bucket
+      Properties: 
+        BucketName: !Sub ${Prefix}-s3-ml-artifact
+        AccessControl: Private
+        VersioningConfiguration:
+          Status: Enabled
+
     MLOpsBucket:
         Type: AWS::S3::Bucket
         Properties: 
-          BucketName: !Sub ${Username}-s3-ml-dataset
+          BucketName: !Sub ${Prefix}-s3-ml-dataset
           AccessControl: Private
           VersioningConfiguration:
             Status: Enabled
 
-    LambdaRole:
+    CheckModelLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub ${Username}-iam-lambda
+        RoleName: !Sub ${Prefix}-iam-check-model-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -29,6 +34,143 @@ Resources:
               Effect: "Allow"
               Principal:
                 Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "TempAccessAll"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+
+    TrainModelLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Prefix}-iam-train-model-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Path: /service-role/
+        Policies:
+          -
+            PolicyName: "TempAccessAll"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: "Allow"
+                  Action:
+                    - "*"
+                  Resource:
+                    - "*"
+    
+    CheckModelLambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${Prefix}-lambda-check-model
+        Description: A test lambda
+        Runtime: python3.7
+        Code: 
+          ZipFile: !Sub |
+            import json
+
+            def lambda_handler(event, context):
+                import boto3
+            
+                codepipeline = boto3.client('codepipeline')
+                jobId = event["CodePipeline.job"]["id"]
+            
+                try:
+                
+                    codepipeline.put_job_success_result(jobId=jobId)
+            
+                except Exception as e:
+                    print(e)
+                    resp = codepipeline.put_job_failure_result(jobId=jobId,
+                                                                failureDetails={
+                                                                    'type': 'ConfigurationError',
+                                                                    'message': str(e),
+                                                                    'externalExecutionId': context.aws_request_id
+                                                                }
+                                                            )
+            
+                print('donzos!')
+        Handler: index.lambda_handler
+        Role: 
+          Fn::GetAtt:
+            - CheckModelLambdaRole
+            - Arn
+      DependsOn: CheckModelLambdaRole
+
+    TrainModelLambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${Prefix}-lambda-train-model
+        Description: A test lambda
+        Runtime: python3.7
+        Code: 
+          ZipFile: !Sub |
+            import json
+
+            def lambda_handler(event, context):
+                import boto3
+            
+            
+                codepipeline = boto3.client('codepipeline')
+                jobId = event["CodePipeline.job"]["id"]
+            
+                try:
+                
+                    codepipeline.put_job_success_result(jobId=jobId)
+            
+                except Exception as e:
+                    print(e)
+                    resp = codepipeline.put_job_failure_result(jobId=jobId,
+                                                                failureDetails={
+                                                                    'type': 'ConfigurationError',
+                                                                    'message': str(e),
+                                                                    'externalExecutionId': context.aws_request_id
+                                                                }
+                                                            )
+            
+                print('donzos!')
+        Handler: index.lambda_handler
+        Role: 
+          Fn::GetAtt:
+            - CheckModelLambdaRole
+            - Arn
+      DependsOn: TrainModelLambdaRole
+
+    MLOpsPipelineRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub ${Prefix}-iam-pipeline
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "codepipeline.amazonaws.com"
+                  - "codebuild.amazonaws.com"
+                  - "codedeploy.amazonaws.com"
+                  - "cloudformation.amazonaws.com"
                   - "lambda.amazonaws.com"
               Action:
                 - "sts:AssumeRole"
@@ -45,19 +187,84 @@ Resources:
                     - "*"
                   Resource:
                     - "*"
-    
-    LambdaFunction:
-      Type: AWS::Lambda::Function
+
+    DeployPipeline:
+      Type: "AWS::CodePipeline::Pipeline"
       Properties:
-        FunctionName: !Sub ${Username}-lambda-test
-        Description: A test lambda
-        Runtime: python3.7
-        Code:
-          S3Bucket: !Sub ${Username}-s3-lambda-deployment
-          S3Key: !Sub test/${LambdaVersion}.zip
-        Handler: function.lambda_handler
-        Role:
-          Fn::GetAtt:
-            - LambdaRole
-            - Arn
-      DependsOn: LambdaRole
+        Name: !Sub ${Prefix}-mlops-pipeline
+        RoleArn: !GetAtt MLOpsPipelineRole.Arn
+        ArtifactStore:
+            Type: S3
+            Location: !Ref MLArtifactStore
+        Stages:
+          -
+            Name: Source
+            Actions: 
+              - 
+                Name: SourceAction
+                ActionTypeId: 
+                  Category: Source
+                  Owner: AWS
+                  Version: 1
+                  Provider: S3
+                OutputArtifacts: 
+                  - 
+                    Name: ModelSourceOutput
+                Configuration: 
+                  S3Bucket: !Ref MLOpsBucket
+                  S3ObjectKey: temp.yml
+                RunOrder: 1
+          -
+            Name: TrainModel
+            Actions:
+              -
+                Name: TrainModelAction
+                InputArtifacts:
+                  - Name: ModelSourceOutput
+                OutputArtifacts:
+                  -
+                    Name: ModelTrainOutput
+                ActionTypeId:
+                  Category: Invoke
+                  Owner: AWS
+                  Version: 1
+                  Provider: Lambda
+                Configuration:
+                    FunctionName: !Ref CheckModelLambdaFunction
+                RunOrder: 2
+          - 
+            Name: TrainApproval
+            Actions:
+              -
+                Name: TrainApprovalAction
+                ActionTypeId:
+                  Category: Approval
+                  Owner: AWS
+                  Version: 1
+                  Provider: Manual
+                Configuration:
+                    CustomData: 'Was this model trained successfully?'
+                RunOrder: 3
+          -
+            Name: CheckModel
+            Actions:
+              -
+                Name: TrainModel
+                InputArtifacts:
+                  - Name: ModelTrainOutput
+                OutputArtifacts:
+                  -
+                    Name: CheckModelOutput
+                ActionTypeId:
+                  Category: Invoke
+                  Owner: AWS
+                  Version: 1
+                  Provider: Lambda
+                Configuration:
+                    FunctionName: !Ref TrainModelLambdaFunction
+                RunOrder: 4
+      DependsOn: 
+        - CheckModelLambdaFunction 
+        - TrainModelLambdaFunction
+        - MLOpsPipelineRole 
+        - MLOpsBucket    
