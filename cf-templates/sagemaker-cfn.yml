@@ -1,0 +1,69 @@
+Description: "Creates SageMaker notebook instance with cloned GitHub repository and fast.ai library installed."
+
+Parameters:
+  NotebookInstanceSubNetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Select any subnet id"
+    AllowedPattern: ^subnet\-[a-zA-Z0-9]+$
+    ConstraintDescription: "You need to inform any subnetid"
+
+  NotebookInstanceSecGroupId:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: "Select the default security group"
+    AllowedPattern: ^sg\-[a-zA-Z0-9]+$
+    ConstraintDescription: "Select the default security group"
+
+Resources:
+  SageMakerIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+
+  FastaiNotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      NotebookInstanceName: "fastai-instance"
+      InstanceType: "ml.m4.xlarge"
+      SubnetId: !Ref NotebookInstanceSubNetId
+      SecurityGroupIds: !Ref NotebookInstanceSecGroupId
+      RoleArn: !GetAtt SageMakerIamRole.Arn
+      LifecycleConfigName: !GetAtt FastaiNotebookInstanceLifecycleConfig.NotebookInstanceLifecycleConfigName
+
+  FastaiNotebookInstanceLifecycleConfig:
+    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+    Properties:
+      NotebookInstanceLifecycleConfigName: !Sub ${AWS::StackName}-lifecycle-config
+      OnStart:
+        - Content: !Base64 |
+            #!/bin/bash
+
+            git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlop_example
+
+            # Uncomment below to install with fastai
+            # set -e
+
+            # OVERVIEW
+            # This script installs a single conda package in a single SageMaker conda environments.
+
+            # sudo -u ec2-user -i <<EOF
+
+            # PARAMETERS
+            # CHANNEL=fastai
+            # PACKAGE=fastai
+
+            # ENVIRONMENT=python3
+
+            # conda install -c "$CHANNEL" "$PACKAGE" --name "$ENVIRONMENT" --yes
+
+            # EOF
+
