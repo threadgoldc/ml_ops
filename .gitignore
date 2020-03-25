@@ -1,1 +1,4 @@
 venv/
+
+# pycharm history folder
+.idea/
