@@ -1,10 +1,10 @@
 [
     {
       "ParameterKey": "NotebookInstanceSubNetId",
-      "ParameterValue": "subnet-ff1733f0"
-    }, 
+      "ParameterValue": "subnet-4a35e444"
+    },
     {
       "ParameterKey": "NotebookInstanceSecGroupId",
-      "ParameterValue": "sg-95dbc4d0"
+      "ParameterValue": "sg-7acde452"
     }
 ]

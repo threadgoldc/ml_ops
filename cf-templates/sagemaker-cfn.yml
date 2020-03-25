@@ -1,0 +1,79 @@
+Description: "Creates SageMaker notebook instance with cloned GitHub repository and fast.ai library installed."
+
+Parameters:
+  NotebookInstanceSubNetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Select any subnet id"
+    AllowedPattern: ^subnet\-[a-zA-Z0-9]+$
+    ConstraintDescription: "You need to inform any subnetid"
+
+  NotebookInstanceSecGroupId:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: "Select the default security group"
+    AllowedPattern: ^sg\-[a-zA-Z0-9]+$
+    ConstraintDescription: "Select the default security group"
+
+  NotebookInstanceGitHubRepo:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: github
+
+Resources:
+  SageMakerIamRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+
+  FastaiNotebookInstance:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      NotebookInstanceName: "fastai-instance"
+      InstanceType: "ml.m4.xlarge"
+      DefaultCodeRepository: !Sub
+        - https://${GITHUB_TOKEN}@github.com/threadgoldc/ml_ops.git
+        - { GITHUB_TOKEN: !Ref NotebookInstanceGitHubRepo }
+      SubnetId: !Ref NotebookInstanceSubNetId
+      SecurityGroupIds: !Ref NotebookInstanceSecGroupId
+      RoleArn: !GetAtt SageMakerIamRole.Arn
+      LifecycleConfigName: !GetAtt FastaiNotebookInstanceLifecycleConfig.NotebookInstanceLifecycleConfigName
+
+  FastaiNotebookInstanceLifecycleConfig:
+    Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
+    Properties:
+      NotebookInstanceLifecycleConfigName: !Sub ${AWS::StackName}-lifecycle-config
+      OnStart:
+        - Content: !Base64 |
+            #!/bin/bash
+
+            set -e
+
+            echo "Creating fast.ai conda enviornment"
+            cat > /home/ec2-user/fastai-setup.sh << EOF
+            #!/bin/bash
+            cd /home/ec2-user/SageMaker/fastai
+            conda env update
+            PYTHON="3.6"
+            conda create --yes --name mlops python="$PYTHON"
+            echo "Finished creating fast.ai conda environment"
+            EOF
+
+            chown ec2-user:ec2-user /home/ec2-user/fastai-setup.sh
+            chmod 755 /home/ec2-user/fastai-setup.sh
+
+            sudo -i -u ec2-user bash << EOF
+            echo "Creating fast.ai conda env in background process."
+            source activate mlops
+            nohup pip install http://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linux_x86_64.whl &
+            nohup pip install fastai &
+            nohup pip install --quiet boto3 &pip install ipykernel
+            python -m ipykernel install --user --name mlops --display-name "conda_fastai"
+            EOF
