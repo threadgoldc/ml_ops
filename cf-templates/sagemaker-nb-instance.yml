@@ -33,6 +33,17 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
 
+  MLOpsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub mlops-${AWS::Region}-${AWS::AccountId}
+      Tags:
+        - Key: Name
+          Value: !Sub mlops-${AWS::Region}-${AWS::AccountId}
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+
   FastaiNotebookInstance:
     Type: "AWS::SageMaker::NotebookInstance"
     Properties:
@@ -45,6 +56,8 @@ Resources:
       SecurityGroupIds: !Ref NotebookInstanceSecGroupId
       RoleArn: !GetAtt SageMakerIamRole.Arn
       LifecycleConfigName: !GetAtt FastaiNotebookInstanceLifecycleConfig.NotebookInstanceLifecycleConfigName
+    DependsOn:
+      - MLOpsBucket
 
   FastaiNotebookInstanceLifecycleConfig:
     Type: "AWS::SageMaker::NotebookInstanceLifecycleConfig"
@@ -77,3 +90,5 @@ Resources:
             nohup pip install --quiet boto3 &pip install ipykernel
             python -m ipykernel install --user --name mlops --display-name "conda_fastai"
             EOF
+
+
