@@ -90,5 +90,3 @@ Resources:
             nohup pip install --quiet boto3 &pip install ipykernel
             python -m ipykernel install --user --name mlops --display-name "conda_fastai"
             EOF
-
-
