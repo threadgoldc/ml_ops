@@ -54,18 +54,6 @@ Resources:
         - Content: !Base64 |
             #!/bin/bash
 
-            # git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlops_example
-
-            # git config --global credential.helper '!aws codecommit credential-helper $@'
-            # git config --global credential.UseHttpPath true
-            # cp /root/.gitconfig /home/ec2-user/ && chown ec2-user:ec2-user /home/ec2-user/.gitconfig
-
-            # TOKEN=$(aws ssm get-parameter --name github --query Parameter.Value)
-            # GITHUB_TOKEN=${TOKEN//[^[:alnum:]]/}
-            # export GITHUB_TOKEN=$GITHUB_TOKEN
-            # git clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git /home/ec2-user/SageMaker/ml_ops
-
-            #!/bin/bash
             set -e
 
             echo "Creating fast.ai conda enviornment"
@@ -88,5 +76,4 @@ Resources:
             nohup pip install fastai &
             nohup pip install --quiet boto3 &pip install ipykernel
             python -m ipykernel install --user --name mlops --display-name "conda_fastai"
-
             EOF
