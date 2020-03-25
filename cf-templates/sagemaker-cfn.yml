@@ -13,6 +13,10 @@ Parameters:
     AllowedPattern: ^sg\-[a-zA-Z0-9]+$
     ConstraintDescription: "Select the default security group"
 
+  NotebookInstanceGitHubRepo:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: github
+
 Resources:
   SageMakerIamRole:
     Type: "AWS::IAM::Role"
@@ -34,6 +38,9 @@ Resources:
     Properties:
       NotebookInstanceName: "fastai-instance"
       InstanceType: "ml.m4.xlarge"
+      DefaultCodeRepository: !Sub
+        - https://${GITHUB_TOKEN}@github.com/threadgoldc/ml_ops.git
+        - { GITHUB_TOKEN: !Ref NotebookInstanceGitHubRepo }
       SubnetId: !Ref NotebookInstanceSubNetId
       SecurityGroupIds: !Ref NotebookInstanceSecGroupId
       RoleArn: !GetAtt SageMakerIamRole.Arn
@@ -47,7 +54,16 @@ Resources:
         - Content: !Base64 |
             #!/bin/bash
 
-            git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlops_example
+            # git clone https://github.com/awslabs/amazon-sagemaker-mlops-workshop.git /home/ec2-user/SageMaker/mlops_example
+
+            # git config --global credential.helper '!aws codecommit credential-helper $@'
+            # git config --global credential.UseHttpPath true
+            # cp /root/.gitconfig /home/ec2-user/ && chown ec2-user:ec2-user /home/ec2-user/.gitconfig
+
+            # TOKEN=$(aws ssm get-parameter --name github --query Parameter.Value)
+            # GITHUB_TOKEN=${TOKEN//[^[:alnum:]]/}
+            # export GITHUB_TOKEN=$GITHUB_TOKEN
+            # git clone https://$GITHUB_TOKEN@github.com/threadgoldc/ml_ops.git /home/ec2-user/SageMaker/ml_ops
 
             #!/bin/bash
             set -e
@@ -70,8 +86,6 @@ Resources:
             source activate mlops
             nohup pip install http://download.pytorch.org/whl/cpu/torch-1.0.0-cp36-cp36m-linux_x86_64.whl &
             nohup pip install fastai &
-            nohup pip install biopython &
-            nohup pip install networkx &
             nohup pip install --quiet boto3 &pip install ipykernel
             python -m ipykernel install --user --name mlops --display-name "conda_fastai"
 
