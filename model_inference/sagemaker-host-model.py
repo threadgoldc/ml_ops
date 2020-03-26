@@ -38,7 +38,7 @@ if __name__== "__main__":
     trainingJobName = "xgboost-2020-03-21-12-00-00"
 
     # define template for sagemaker endpoint, e.g,
-    cf_deploy_template = "cf-templates/sagemaker-host-model.yml"
+    cf_deploy_template = "cf-templates/sm-model-hosting.yml"
 
     # deploy endpoint for inference
     deploy_sagemaker_endpoint(trainingJobName, cf_deploy_template)
