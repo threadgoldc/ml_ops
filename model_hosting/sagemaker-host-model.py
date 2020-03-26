@@ -1,6 +1,16 @@
 import boto3
 
-def create_model_stack(trainingJobName, host_template):
+def deploy_sagemaker_endpoint(trainingJobName, cf_template):
+    """
+    Deploys Sagemaker endpoint for inference using trained Sagemaker model
+    and CloudFormation template.
+
+    :param trainingJobName: trainJobName of trained Sagemaker model.
+    :param cf_template: CloudFormation template to create endpoint.
+    :return: Sagemaker endpoint which can be used to deploy model.
+    """
+
+    # boto sagemaker and cloudformation instances
     sm = boto3.client("sagemaker")
     cf = boto3.client("cloudformation")
 
@@ -11,8 +21,8 @@ def create_model_stack(trainingJobName, host_template):
     roleArn = train_params['RoleArn']
 
     # create stack
-    with open(host_template, "r") as f:
-        stack = cf.create_stack(StackName=host_template,
+    with open(cf_template, "r") as f:
+        stack = cf.create_stack(StackName=cf_template,
                                 TemplateBody=f.read(),
                                 Parameters=[
                                     {"ParameterKey": "ModelName", "ParameterValue": trainingJobName},
@@ -22,4 +32,13 @@ def create_model_stack(trainingJobName, host_template):
                                 ])
         print(stack)
 
+if __name__== "__main__":
 
+    # define your training job name, e.g.,
+    trainingJobName = "xgboost-2020-03-21-12-00-00"
+
+    # define template for sagemaker endpoint, e.g,
+    cf_deploy_template = "cf-templates/sagemaker-host-model.yml"
+
+    # deploy endpoint for inference
+    deploy_sagemaker_endpoint(trainingJobName, cf_deploy_template)
