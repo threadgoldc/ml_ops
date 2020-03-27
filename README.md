@@ -4,15 +4,15 @@ Hemloc provides a Amazon Web Services (AWS) based platform for machine learning 
 train, host and deploy machine learning models in a reliable way, translating the entire machine learning
 pipeline into code. 
 
-## Configurations: set up your Hemloc platform within a few minutes: 
+## Configurations: 
 
-1. ```git clone https://github.com/threadgoldc/ml_ops.git```
+```git clone https://github.com/threadgoldc/ml_ops.git```
 
-### Using Anaconda
+### Anaconda
 ```conda env create -f environment.yml```
 ```conda activate hemloc```
 
-### Using Venv 
+### Venv 
 ```sudo pip install virtualenv```
 ```virtualenv ~/hemloc --no-site-packages```
 ```~/hemloc/bin/pip install -r requirements.txt```
