@@ -24,7 +24,10 @@ pipeline into code.
 4. Authenticate your github account through AWS services.
     1. In the AWS Console, go to Systems Manager -> Parameter Store ((https://console.aws.amazon.com/systems-manager/parameters?region=us-east-1)) 
     2. Create a new parameter -> ```Name=Github Value=Github-Repository-Token```
-5. Run: ```sh ./scripts/create-stack.sh pipeline```
+5. To create the feature pipeline for dev deployment, run: ```sh ./scripts/create-update-feature.sh <commit message>```
+6. To create the production pipeline for staging and production, run ```sh ./scripts/create-update-pipeline.sh <commit message>```
+7. Make changes to the code, test it in development by running ```sh ./scripts/create-update-feature.sh <commit message>```
+8. To commit changes to staging and production, run  ```sh ./scripts/main-pipeline-run.sh <commit message>```
 
 ### Machine learning environment 
 Once you have configured the pipeline you are ready to launch some Sagemaker notebook instances. Depending on your 

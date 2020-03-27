@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#this file does the training (fit) of the model after having preprocessed the data accordingly
 from __future__ import print_function
 
 
@@ -30,22 +30,16 @@ import sys
 
 # These are the paths to where SageMaker mounts interesting things in your container.
 
-prefix = './opt/ml/' #check whether .
+prefix = '/opt/ml/' #check whether .
 
 input_path = prefix + 'input/data'
 output_path = os.path.join(prefix, 'output')
 model_path = os.path.join(prefix, 'model')
 #param_path = os.path.join(prefix, 'input/config/hyperparameters.json')
 
-# This algorithm has a single channel of input data called 'training'. Since we run in
-# File mode, the input files are copied to the directory specified here.
+# This algorithm has a single channel of input data called 'training'. 
 channel_name='training'
 training_path = os.path.join(input_path, channel_name)
-
-
-
-
-
 
 
 # The function to execute the training.
@@ -87,11 +81,8 @@ def train():
             pickle.dump(history, out)
         print('Training complete.')
     except Exception as e:
-        # Write out an error file. This will be returned as the failureReason in the
-        # DescribeTrainingJob result.
-        trc = traceback.format_exc()
         # Printing this causes the exception to be in the training job logs, as well.
-        print('Exception during training: ' + str(e) + '\n' + trc, file=sys.stderr)
+        print('Exception during training: ' + str(e) + '\n', file=sys.stderr)
         # A non-zero exit code causes the training job to be marked as Failed.
         sys.exit(255)
 
@@ -104,7 +95,7 @@ def preprocess(df, timeSteps=400, step=20, testSize=0.2):
 
     print('Preprocessing started')
 
-
+    #we reshape into 3d arrays of length ewual to timesteps. final df is= (N*timesteps*3)
     for i in range(0, len(df) - timeSteps, step):
         xs = df['x-axis'].values[i: i + timeSteps]
         ys = df['y-axis'].values[i: i + timeSteps]
@@ -122,7 +113,7 @@ def preprocess(df, timeSteps=400, step=20, testSize=0.2):
 
 
 def lstm_model(units = 32, num_classes = 6):
-    '''add descr'''
+    '''Long shor-term memory model with 2 layers of lstm cells and one fully connected layer on top'''
 
     model_lstm = Sequential()
     model_lstm.add(LSTM(units, return_sequences=True))
