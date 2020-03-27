@@ -4,7 +4,8 @@
 DEFAULT_SECURITY_GROUP="$(aws ec2 describe-security-groups --group-names default \
  --query 'SecurityGroups[*].[GroupId]' --output text)"
 DEFAULT_SUBNET="$(aws ec2 describe-subnets --filters Name=availability-zone,Values=us-east-1f \
---query 'Subnets[*].[SubnetId]' --output text)"
+--query 'Subnets[*].[SubnetId]' --output text)" ||  DEFAULT_SUBNET="$(aws ec2 create-default-subnet  \
+--availability-zone us-east-1f --query 'Subnets[*].[SubnetId]' --output text)"
 
 # launch stacks
 aws cloudformation create-stack  \
