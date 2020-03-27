@@ -1,0 +1,12 @@
+numpy
+pandas
+flask
+tensorflow
+keras
+jupyter
+seaborn
+scikit-learn
+awscli
+gevent
+gunicorn
+
