@@ -25,10 +25,10 @@ def deploy_sagemaker_endpoint(trainingJobName, cf_template):
         stack = cf.create_stack(StackName=cf_template,
                                 TemplateBody=f.read(),
                                 Parameters=[
-                                    {"ParameterKey": "ModelName", "ParameterValue": trainingJobName},
-                                    {"ParameterKey": "TrainingImage", "ParameterValue": trainingImage},
-                                    {"ParameterKey": "ModelDataUrl", "ParameterValue": modelDataUrl},
-                                    {"ParameterKey": "RoleArn", "ParameterValue": roleArn}
+                                    {"ParameterKey": "ModelName","ParameterValue": trainingJobName},
+                                    {"ParameterKey": "TrainingImage","ParameterValue": trainingImage},
+                                    {"ParameterKey": "ModelDataUrl","ParameterValue": modelDataUrl},
+                                    {"ParameterKey": "RoleArn","ParameterValue": roleArn}
                                 ])
         print(stack)
 
