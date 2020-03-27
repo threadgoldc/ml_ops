@@ -23,7 +23,7 @@ pipeline into code.
 3. Optimize your machine learning experience by configuring your AWS region to ```us-east-1```
 4. Authenticate your github account through AWS services.
     1. In the AWS Console, go to Systems Manager -> Parameter Store ((https://console.aws.amazon.com/systems-manager/parameters?region=us-east-1)) 
-    2. Create a new paramter -> Name=Github Value=```Github-Repository-Token``
+    2. Create a new paramter -> ```Name=Github Value=Github-Repository-Token```
 5. Run: ```sh ./scripts/create-stack.sh pipeline```
 
 ### Notebook environment 
