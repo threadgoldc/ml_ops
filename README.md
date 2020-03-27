@@ -23,10 +23,10 @@ pipeline into code.
 3. Optimize your machine learning experience by configuring your AWS region to ```us-east-1```
 4. Authenticate your github account through AWS services.
     1. In the AWS Console, go to Systems Manager -> Parameter Store ((https://console.aws.amazon.com/systems-manager/parameters?region=us-east-1)) 
-    2. Create a new paramter -> ```Name=Github Value=Github-Repository-Token```
+    2. Create a new parameter -> ```Name=Github Value=Github-Repository-Token```
 5. Run: ```sh ./scripts/create-stack.sh pipeline```
 
-### Notebook environment 
+### Machine learning environment 
 Once you have configured the pipeline you are ready to launch some Sagemaker notebook instances. Depending on your 
 preferences you can now launch: 
 1. Exploratory machine learning environment: ```sh ./scripts/create-sm-exploratory-nb-instance.sh```
