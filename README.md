@@ -6,16 +6,16 @@ pipeline into code.
 
 ## Configurations: 
 
-```git clone https://github.com/threadgoldc/ml_ops.git```
+1. ```git clone https://github.com/threadgoldc/ml_ops.git```
 
 ### Anaconda
-```conda env create -f environment.yml```
-```conda activate hemloc```
+1. ```conda env create -f environment.yml```
+2. ```conda activate hemloc```
 
 ### Venv 
-```sudo pip install virtualenv```
-```virtualenv ~/hemloc --no-site-packages```
-```~/hemloc/bin/pip install -r requirements.txt```
+1. ```sudo pip install virtualenv```
+2. ```virtualenv ~/hemloc --no-site-packages```
+3. ```~/hemloc/bin/pip install -r requirements.txt```
 
 ### Pipeline: 
 1. Make sure you have a AWS account. If you do not have one yet, follow the instructions here: https://aws.amazon.com/getting-started/
